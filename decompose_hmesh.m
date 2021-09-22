@@ -1,4 +1,4 @@
-function [V,H] = decompose_hmesh(V,H,visualize)
+function out = decompose_hmesh(V,H,visualize)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
@@ -30,6 +30,8 @@ function [V,H] = decompose_hmesh(V,H,visualize)
     data = processhmesh(V,H,visualize);
     
     %% Begin decomposition
+    Vs{1} = V; Hs{1} = H;
+    iter = 2;
     while any(data.isSingularNode)
         %% choose random node to simplify
         singularNodes = find(data.isSingularNode & ~data.isBoundaryVertex);
@@ -53,9 +55,12 @@ function [V,H] = decompose_hmesh(V,H,visualize)
         
         
         %% recompute data
-        data = processhmesh(V,H,visualize);
+        data = processhmesh(V,H,visualize); title(num2str(iter));
+        Vs{iter} = V; Hs{iter} = H; iter = iter+1;
     end
     
+    out.Vs=Vs;
+    out.Hs=Hs;
 end
 
 

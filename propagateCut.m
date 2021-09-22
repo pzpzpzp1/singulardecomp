@@ -12,10 +12,12 @@ function cutfaces = propagateCut(data,startnode,cutseed)
     cutfaces = false(size(data.F,1),1);
     for i=1:numel(cutseed)
         cutfaces(extendRegularFaces(data, cutseed(i)))=true;
+        
+        
+        patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.5);
+        patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','y')
     end
     %assert(~any(cutfaces(forbiddenfaces)));
-%     patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.1);
-%     patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','c')
 
     %% keep propagating cut
     resolvednodes = startnode.ind;
@@ -33,14 +35,15 @@ function cutfaces = propagateCut(data,startnode,cutseed)
         facesToCut = selectSplit(data, node, cutfaces);
         for i=1:numel(facesToCut)
             cutfaces(extendRegularFaces(data, facesToCut(i)))=true;
+            
+            patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.5)
+            patch('vertices',data.V,'faces',data.F(facesToCut,:),'facecolor','c')
         end
         resolvednodes(end+1) = node.ind;
         % not sure the forbidden face check here does anything or always passes.
         %forbiddenfaces(setdiff(find(sum(data.F2V(:,node.ind),2)), cutfaces))=true;
         %assert(~any(cutfaces(forbiddenfaces)));
         
-%         patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.5)
-%         patch('vertices',data.V,'faces',data.F(facesToCut,:),'facecolor','c')
         
         
     end

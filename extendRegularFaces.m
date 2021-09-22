@@ -5,7 +5,7 @@ function cutfaces = extendRegularFaces(data, faceseed)
     edgeseeds = data.F2Earray(faceseed,:);
     
     for i = [1 3]
-        [logicalchord, facechord, edgechord] = extendRegularFaceChord(data, faceseed, edgeseeds(1));
+        [logicalchord, facechord, edgechord] = extendRegularFaceChord(data, faceseed, edgeseeds(i));
         
         for j=1:numel(facechord)
             edirs = setdiff(data.F2Earray(facechord(j),:), edgechord);
@@ -21,3 +21,10 @@ function cutfaces = extendRegularFaces(data, faceseed)
     
     
 end
+%{
+
+patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','k','facealpha',.5);
+patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','y')
+
+
+%}
