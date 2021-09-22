@@ -6,9 +6,10 @@ function out = decompose_hmesh(V,H,visualize)
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
         % file_name = 'meshes/rockarm.vtk';
-        % file_name = 'meshes/hex_sphere.vtk';
+%         file_name = 'meshes/hex_sphere.vtk';
+        file_name = 'meshes/unit.vtk';
         % file_name = 'meshes/hex_tetrahedron.vtk';
-        file_name = 'meshes/hex_ellipsoid_coarse.vtk';
+%         file_name = 'meshes/hex_ellipsoid_coarse.vtk';
 %         file_name = 'meshes/sing1.vtk';
 %         file_name = 'meshes/sing2.vtk';
 %         file_name = 'meshes/sing3.vtk';
@@ -24,7 +25,7 @@ function out = decompose_hmesh(V,H,visualize)
 
     %% load mesh. And preprocess with padding
     data = processhmesh(V,H,0);
-    if any(data.isSingularNode & data.isBoundaryVertex) && false
+    if (any(data.isSingularNode & data.isBoundaryVertex) && false) || contains(file_name,'unit.vtk')
         [V,H] = padhmesh(V,H);
     end
     data = processhmesh(V,H,visualize);
@@ -32,7 +33,7 @@ function out = decompose_hmesh(V,H,visualize)
     %% Begin decomposition
     Vs{1} = V; Hs{1} = H;
     iter = 2;
-    while any(data.isSingularNode)
+    while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
         singularNodes = find(data.isSingularNode & ~data.isBoundaryVertex);
         selind = randi(numel(singularNodes));
@@ -61,6 +62,12 @@ function out = decompose_hmesh(V,H,visualize)
     
     out.Vs=Vs;
     out.Hs=Hs;
+    
+    [dname,fname,ext]=fileparts(file_name);
+    outname = sprintf('results/%s.vtk',fname);
+    mesh.points = V; mesh.cells = H;
+    save_vtk(mesh, outname)
+    
 end
 
 

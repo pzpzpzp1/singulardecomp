@@ -79,7 +79,8 @@ function [Vnew,Hnew]=sheetinsertion(data, cut)
     vn=vn./vecnorm(vn,2,2);
     perturbdir = vn(oldVind,:);
     
-    Vnew((data.nV+1):end,:) = Vnew((data.nV+1):end,:) + .02*perturbdir;
+    pertmag = median(data.edgelengths)/5;
+    Vnew((data.nV+1):end,:) = Vnew((data.nV+1):end,:) + pertmag*perturbdir;
     
     % Create new connectivity
     vertexmap = (1:data.nV)';
@@ -96,6 +97,11 @@ function [Vnew,Hnew]=sheetinsertion(data, cut)
     
     %% visualize and verify
     figure; drawnow; datanew = processhmesh(Vnew,Hnew,1);
+    for i=1:size(Hnew,1)
+        assert(numel(unique(Hnew(i,:)))==8)
+    end
+    
+    
 end
 
 
