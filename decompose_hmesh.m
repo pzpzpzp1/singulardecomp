@@ -53,7 +53,7 @@ function out = decompose_hmesh(V,H,visualize)
         [V,H]=sheetinsertion(data, cut);
         
         %% geometric simplification
-        
+        [V,H] = smoothenhmesh(V,H);
         
         %% recompute data
         data = processhmesh(V,H,visualize); title(num2str(iter));
