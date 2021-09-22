@@ -40,15 +40,14 @@ function [V,H] = decompose_hmesh(V,H,visualize)
         node = getNode(data, node_ind);
         
         %% select sheet to insert in node
-        [cutseed, hexesOneSide] = selectSplit(data,node);
-        % patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','c')
-        % scatter3(data.cellBarycenters(hexesOneSide,1),data.cellBarycenters(hexesOneSide,2),data.cellBarycenters(hexesOneSide,3),'r')
+        cutseed = selectSplit(data,node);
         
         %% propagate sheet
-        cut = propagateCut(data,node,cutseed,hexesOneSide);
-        
+        cut = propagateCut(data,node,cutseed);
+        patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
+
         %% insert sheet
-        
+        [V,H]=sheetinsertion(data, cut);
         
         %% geometric simplification
         
