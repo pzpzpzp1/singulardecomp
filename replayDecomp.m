@@ -8,7 +8,7 @@ function replayDecomp(decompdata)
 %         load results/tetpadded_16/decompdata.mat;
 %         load results/hex_ellipsoid_coarse_78/decompdata.mat;
 %         load results/sing2_88/decompdata.mat;
-        load results/sing3_59/decompdata.mat;
+        load results/sing3_92/decompdata.mat;
     end
     
     datas = decompdata.datas;
