@@ -9,12 +9,11 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
 %         file_name = 'meshes/hex_sphere.vtk';
 %         file_name = 'meshes/unit.vtk';
 %         file_name = 'meshes/hex_tetrahedron.vtk';
-        file_name = 'meshes/hex_ellipsoid_coarse.vtk';
+%         file_name = 'meshes/hex_ellipsoid_coarse.vtk';
 %         file_name = 'meshes/tetpadded.vtk';
 %         file_name = 'meshes/sing1.vtk';
 %         file_name = 'meshes/sing2.vtk';
-%         file_name = 'meshes/sing3.vtk';
-%         file_name = 'results_fmincon/sing3.vtk';
+        file_name = 'meshes/sing3.vtk';
 %         file_name = 'meshes/kitten.mesh';
         
         mesh = load_vtk(file_name);
@@ -28,7 +27,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     [dname,fname,ext]=fileparts(file_name);
     V=V0;H=H0;
     data = processhmesh(V,H,0);
-    if (any(data.isSingularNode & data.isBoundaryVertex) && false) || contains(file_name,'unit.vtk')
+    if (any(data.isSingularNode & data.isBoundaryVertex) && false) || contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk')
         [V,H] = padhmesh(V,H);
         % [V,H] = hex1to8(V,H); [V,H] = hex1to8(V,H);
         % V = smoothenhmesh(V,H,[],visualize);
@@ -47,6 +46,10 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     outname = sprintf('results/%s_%d/hmesh_1.vtk',fname,saveseed);
     mesh.points = V; mesh.cells = H;
     save_vtk(mesh, outname)
+    
+    Vpresmooth={};
+    hexSheetInds={};
+    cuts={};
     
     %% Begin decomposition
     datas{1} = data;

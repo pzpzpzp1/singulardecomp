@@ -4,7 +4,8 @@
 function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
     if nargin==0
         file_name = 'results/sing1_59/hmesh_2.vtk';
-        file_name = 'results/hex_ellipsoid_coarse_41/hmesh_5.vtk';
+%         file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
+%         file_name = 'results/sing3_59/hmesh_2.vtk';
         mesh = load_vtk(file_name);
         V0 = mesh.points;
         H = mesh.cells;
@@ -25,7 +26,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;
     
-    lfac = 5000;
+    lfac = 500;
     for i=1:maxiters
         Vs{i}=V;
         if visualize

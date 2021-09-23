@@ -12,9 +12,9 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         if numel(node.v)==4
             % handle split on tetrahedral singularity type
             vpath = [1 2 3 4];
-            [allf, einds] = ismember(sort([vpath; circshift(vpath,-1)]',2), sort(node.e,2), 'rows');
+            [allf, relevantEinds] = ismember(sort([vpath; circshift(vpath,-1)]',2), sort(node.e,2), 'rows');
             assert(all(allf));
-            cutfaces = node.e2F(einds);
+            cutfaces = node.e2F(relevantEinds);
             return;
         end
 
@@ -23,8 +23,19 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         if sum(signature(6:end))==0
             % only 3,4,5 singularities. must fit into the list of 10 interior singular node types.
             if all(signature(3:5)==[2 2 2]')
-                %% (2,2,2) type is a 3-5 joined perpendicularly
-                error('unhandled');
+                %% (2,2,2) type is a 3-5 joined perpendicularly.
+                % they can be pulled apart by picking all faces adjacent to one deg 3 and one deg 5 singular edge
+                relverts = find(ismember(data.efdeg(node.v2E),[3 5]));
+                relvertsdeg5ind = data.efdeg(node.v2E(relverts,:))==5;
+                relvertsdeg5 = relverts(relvertsdeg5ind)';
+                 
+                relevantEinds = find(all(ismember(node.e,relverts),2));
+                nodeedges = node.e(relevantEinds,:);
+                skipind = ismember(sort(relvertsdeg5, 2), sort(nodeedges,2),'rows');
+                relevantEinds(skipind,:)=[];
+                
+                cutfaces = node.e2F(relevantEinds);
+                return;
             end
 
             if all(signature(3:5)==[0 4 4]')
@@ -38,8 +49,7 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
     else
         %% finish the existing cut. while avoiding forbidden cuts.
         % could be smart about this but for now lets just make a graph, and
-        % fill it in arbitrarily.
-        partialpath = alreadycutfaces(node.F_adj);
+        % fill it in arbitrarily.        partialpath = alreadycutfaces(node.F_adj);
         vertscutcount = accumarray(reshape(node.e(partialpath,:),[],1),1);
         assert(all(ismember(vertscutcount,[0 1 2]))); % otherwise, the existing cut already invalidly cuts this node. 
         
