@@ -37,7 +37,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     trimesh0.Faces = [data.F(data.isBoundaryFace,[1 2 3]);  data.F(data.isBoundaryFace,[3 4 1])];
     [trimesh0.Vertices, trimesh0.Faces] = minimizeMesh(trimesh0.Vertices, trimesh0.Faces);
     % save starting mesh as index 0
-    outname = sprintf('results/%s_0.vtk',fname);
+    outname = sprintf('results/%s_1.vtk',fname);
     mesh.points = V; mesh.cells = H;
     save_vtk(mesh, outname)
     
@@ -76,8 +76,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         %% recompute data
         data = processhmesh(V,H,visualize); title(num2str(iter));
         datas{iter} = data;
-        iter = iter+1;
         outname = sprintf('results/%s_%d.vtk',fname,iter); mesh.points = V; mesh.cells = H; save_vtk(mesh, outname);
+        iter = iter+1;
     end
     
     decompdata.datas = datas;
