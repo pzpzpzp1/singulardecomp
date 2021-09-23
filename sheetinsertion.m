@@ -1,6 +1,6 @@
 % sheet insertion on hex mesh data. cut is a logical bit per face for
 % whether insertion happens there or not.
-function [Vnew,Hnew]=sheetinsertion(data, cut)
+function [Vnew,Hnew,hexsheetinds]=sheetinsertion(data, cut)
     %% validation to make sure this cut can be made while preserving that the output is a hex mesh
     cutfaceinds = find(cut);
     QM.F = data.F(cutfaceinds,:);
@@ -89,6 +89,8 @@ function [Vnew,Hnew]=sheetinsertion(data, cut)
     Hnew(hexesbin2,:) = vertexmap(Hnew(hexesbin2,:));
     newH = [QM.F, vertexmap(QM.F)];
     Hnew = [Hnew; newH];
+    
+    hexsheetinds = (1:size(newH,1))' + data.nH;
     
     vv = data.cellBarycenters(hexesbin1,:); 
     scatter3(vv(:,1),vv(:,2),vv(:,3),'y','filled')

@@ -1,11 +1,13 @@
 % outputs cut faces. 
-function cutfaces = selectSplit(data, node, alreadycutfaces)
+function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
     assert(~data.isBoundaryVertex(node.ind))
     if nargin < 3
-        alreadycutfaces = []
+        alreadycutfaces = false(data.nF,1);
+        forbiddenfaces = false(data.nF,1);
     end
     
-    if numel(alreadycutfaces)==0
+    if all(~alreadycutfaces)
+        assert(all(~forbiddenfaces)); % no existing cuts means nothing should be off limits to cut.
         %% tetrahedral type
         if numel(node.v)==4
             % handle split on tetrahedral singularity type
@@ -13,7 +15,6 @@ function cutfaces = selectSplit(data, node, alreadycutfaces)
             [allf, einds] = ismember(sort([vpath; circshift(vpath,-1)]',2), sort(node.e,2), 'rows');
             assert(all(allf));
             cutfaces = node.e2F(einds);
-
             return;
         end
 
@@ -32,10 +33,10 @@ function cutfaces = selectSplit(data, node, alreadycutfaces)
             end
         end
         
-        %% general case. find a cut based on the inductive simplification procedure.
+        %% general case. find a cut based on the inductive simplification procedure. no conflicts to worry about.
         error('unhandled');
     else
-        %% finish the existing cut. 
+        %% finish the existing cut. while avoiding forbidden cuts.
         % could be smart about this but for now lets just make a graph, and
         % fill it in arbitrarily.
         partialpath = alreadycutfaces(node.F_adj);
@@ -48,15 +49,26 @@ function cutfaces = selectSplit(data, node, alreadycutfaces)
             % cut is left hanging already. can just continue. There is
             % possibility the existing cut splits triangulation into 3
             % parts though which it's unclear how to deal with. leave it as
-            % an error for when trying to split the face.
+            % an error for when trying to split the face. 
+            % actually it probably works fine in that setting. but the forbidden faces should prevent this from happening.
             cutfaces = [];
             return;
         end
         
-        % use shortest path to close up the partial path loop.
+        % use shortest path to close up the partial path loop. exclude forbidden cuts.
+        localforbid = forbiddenfaces(node.F_adj);
+        
         g = graph();
-        g = addedge(g, node.e(~partialpath,1), node.e(~partialpath,2));
+        g = addedge(g, node.e(~partialpath & ~localforbid,1), node.e(~partialpath & ~localforbid,2));
         restofpath = shortestpath(g,endpoints(1),endpoints(2));
+        
+        if numel(restofpath)==0
+            %{
+            After removing already cut faces, and forbidden faces, there were no faces available left to bridge the endpoints. 
+            Not sure if this can happen. perhaps if the singular graph wraps around itself in some way.
+            %}
+            error('no path found.');
+        end
         
         [~,restofpath_edgeinds] = ismember(sort([restofpath(1:end-1); restofpath(2:end)]',2), node.e,'rows');
         cutfaces = node.e2F(restofpath_edgeinds);

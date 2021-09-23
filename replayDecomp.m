@@ -2,13 +2,17 @@ function replayDecomp(decompdata)
     if nargin==0
         close all; clc;
 %         decompdata = decompose_hmesh; % save('decompdata2.mat','decompdata');
-        load results/unit_45.mat;
-        load results/unit_36.mat;
+%         load results/unit_70/decompdata.mat;
+%         load results/unit_15/decompdata.mat;
+%         load results/sing1_59/decompdata.mat;
+%         load results/tetpadded_16/decompdata.mat;
+        load results/hex_ellipsoid_coarse_78/decompdata.mat;
     end
     
     datas = decompdata.datas;
     Vpresmooth = decompdata.Vpresmooth;
     cuts = decompdata.cuts;
+    hexSheetInds = decompdata.hexSheetInds;
     
     fh = figure; guielems={};
     for i=1:numel(cuts)
@@ -17,7 +21,7 @@ function replayDecomp(decompdata)
         data = datas{i};
         %% plot current state and selected cut sheet
         [~, guielems] = visualizeHmeshData(data, fh);
-        guielems{end+1} = patch('vertices',data.V,'faces',data.F(cuts{i},:),'facecolor','c','facealpha',.9);
+        guielems{end+1} = patch('vertices',data.V,'faces',data.F(cuts{i},:),'facecolor','r','facealpha',.9);
         title(sprintf('cut %d',i))
         pause;
         
@@ -31,13 +35,18 @@ function replayDecomp(decompdata)
             Vi = Vold*(1-ts(ti)) + Vnew*ts(ti);
             tempdata.V = Vi;
             [~, guielems] = visualizeHmeshData(tempdata,fh);
+            
+            insertionlayerfaces = unique(tempdata.H2Farray(hexSheetInds{i},:));
+            guielems{end+1} = patch('vertices',tempdata.V,'faces',tempdata.F(insertionlayerfaces,:),'facecolor','c','facealpha',.4);
+            
             drawnow;
         end
         title(sprintf('post sheet insertion %d',i))
-%         pause;
+        pause;
     end
     
-    
+    guielems = deleteElems(guielems);
+    [~, guielems] = visualizeHmeshData(tempdata,fh);
     
 end
 

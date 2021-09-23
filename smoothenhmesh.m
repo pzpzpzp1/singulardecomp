@@ -2,18 +2,31 @@
 % also minimizes scaled jacobian to ensure no hex element gets horribly skewed compared to any other
 % DOES NOT PRESERVE BOUNDARY AT ALL. used for topological analysis. boundary isn't much of a concern.
 function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
+    if nargin==0
+        file_name = 'results/sing1_59/hmesh_2.vtk';
+        file_name = 'results/hex_ellipsoid_coarse_41/hmesh_5.vtk';
+        mesh = load_vtk(file_name);
+        V0 = mesh.points;
+        H = mesh.cells;
+        visualize = 1;
+        
+%         [V0,H] = hex1to8(V0,H); [V0,H] = hex1to8(V0,H); 
+    end
+    
     if visualize
         figure; hold all; axis equal; rotate3d on; axis off;
         F = hex2face(H);
     end
     data = processhmesh(V0,H,0); L = data.graphlaplacian;
         
+    maxiters=1000;
     V=V0; p=1; 
     E = hex2edge(H);
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;
-    lfac = 500;
-    for i=1:500
+    
+    lfac = 5000;
+    for i=1:maxiters
         Vs{i}=V;
         if visualize
             try; delete(ptc); catch; end;
@@ -88,6 +101,13 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
     end
     %}
     
+    %{
+     mesh.points = V; mesh.cells = H;
+    save_vtk(mesh, 'test2.vtk')     
+    save_vtk(mesh, 'tetnotsplit.vtk')
+     save_vtk(mesh, 'tetsplit.vtk')
+     save_vtk(mesh, 'tetpadded.vtk')
+    %}
 
 end
 

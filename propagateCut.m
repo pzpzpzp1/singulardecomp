@@ -6,16 +6,21 @@ function cutfaces = propagateCut(data,startnode,cutseed)
 %     scatter3(data.cellBarycenters(hexseed,1),data.cellBarycenters(hexseed,2),data.cellBarycenters(hexseed,3),'r')
     
     %% initial cut propagation from start node
-    %forbiddenfaces = false(data.nF,1); % faces that cannot be cut.
-    %forbiddenfaces(setdiff(find(sum(data.F2V(:,startnode.ind),2)), cutseed))=true;
+    forbiddenfaces = false(data.nF,1); % faces that cannot be cut.
+    forbiddenseed = setdiff(startnode.F_adj, cutseed);
+    for i=1:numel(forbiddenseed)
+        if forbiddenfaces(forbiddenseed(i))==false
+            forbiddenfaces(extendRegularFaces(data, forbiddenseed(i)))=true;
+        end
+        patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
+    end
     
     cutfaces = false(size(data.F,1),1);
+    patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','y')
     for i=1:numel(cutseed)
         cutfaces(extendRegularFaces(data, cutseed(i)))=true;
         
-        
-        patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.5);
-        patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','y')
+        patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','c','facealpha',.5);
     end
     %assert(~any(cutfaces(forbiddenfaces)));
 
@@ -29,22 +34,28 @@ function cutfaces = propagateCut(data,startnode,cutseed)
             % no singular nodes are left hanging. means the cut can go through now.
             break;
         end
-        node = getNode(data, unresolvednodes(1));
+        % pull off next singular node to process
+        node = getNode(data, unresolvednodes(1)); 
         
-        % get a split
-        facesToCut = selectSplit(data, node, cutfaces);
+        % get a cut local to node, and propagate it.
+        facesToCut = selectSplit(data, node, cutfaces, forbiddenfaces);
+        patch('vertices',data.V,'faces',data.F(facesToCut,:),'facecolor','y')
         for i=1:numel(facesToCut)
             cutfaces(extendRegularFaces(data, facesToCut(i)))=true;
             
-            patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','r','facealpha',.5)
-            patch('vertices',data.V,'faces',data.F(facesToCut,:),'facecolor','c')
+            patch('vertices',data.V,'faces',data.F(cutfaces,:),'facecolor','c','facealpha',.5)
         end
+        % mark all other faces local to node as forbidden.
+        forbiddenseed = setdiff(node.F_adj, facesToCut);
+        for i=1:numel(forbiddenseed)
+            if forbiddenfaces(forbiddenseed(i))==false
+                forbiddenfaces(extendRegularFaces(data, forbiddenseed(i)))=true;
+            end
+            patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
+        end
+        
+        % this node is now resolved. it is cut and cannot be cut further.
         resolvednodes(end+1) = node.ind;
-        % not sure the forbidden face check here does anything or always passes.
-        %forbiddenfaces(setdiff(find(sum(data.F2V(:,node.ind),2)), cutfaces))=true;
-        %assert(~any(cutfaces(forbiddenfaces)));
-        
-        
         
     end
     
