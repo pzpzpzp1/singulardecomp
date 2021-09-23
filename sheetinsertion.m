@@ -79,7 +79,7 @@ function [Vnew,Hnew]=sheetinsertion(data, cut)
     vn=vn./vecnorm(vn,2,2);
     perturbdir = vn(oldVind,:);
     
-    pertmag = median(data.edgelengths)/5;
+    pertmag = median(data.edgelengths)/50;
     Vnew((data.nV+1):end,:) = Vnew((data.nV+1):end,:) + pertmag*perturbdir;
     
     % Create new connectivity

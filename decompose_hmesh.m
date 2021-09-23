@@ -1,4 +1,4 @@
-function out = decompose_hmesh(V0,H0,visualize)
+function decompdata = decompose_hmesh(V0,H0,visualize)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
@@ -29,8 +29,9 @@ function out = decompose_hmesh(V0,H0,visualize)
     data = processhmesh(V,H,0);
     if (any(data.isSingularNode & data.isBoundaryVertex) && false) || contains(file_name,'unit.vtk')
         [V,H] = padhmesh(V,H);
+        % V = smoothenhmesh(V,H,[],visualize);
     end
-    data = processhmesh(V,H,visualize);
+    data = processhmesh(V,H,visualize); title('Input mesh');
     % boundary triangle mesh for projection
     trimesh0.Vertices = data.V;
     trimesh0.Faces = [data.F(data.isBoundaryFace,[1 2 3]);  data.F(data.isBoundaryFace,[3 4 1])];
@@ -41,7 +42,7 @@ function out = decompose_hmesh(V0,H0,visualize)
     save_vtk(mesh, outname)
     
     %% Begin decomposition
-    Vs{1} = V; Hs{1} = H;
+    datas{1} = data;
     iter = 2;
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
@@ -58,10 +59,12 @@ function out = decompose_hmesh(V0,H0,visualize)
         
         %% propagate sheet
         cut = propagateCut(data,node,cutseed);
+        cuts{iter-1} = cut;
         patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
-
+        
         %% insert sheet
         [V,H]=sheetinsertion(data, cut);
+        Vpresmooth{iter-1} = V;
         
         %% geometric simplification
         V = smoothenhmesh(V,H,trimesh0,visualize);
@@ -72,12 +75,19 @@ function out = decompose_hmesh(V0,H0,visualize)
 %}
         %% recompute data
         data = processhmesh(V,H,visualize); title(num2str(iter));
-        Vs{iter} = V; Hs{iter} = H; iter = iter+1;
+        datas{iter} = data;
+        iter = iter+1;
         outname = sprintf('results/%s_%d.vtk',fname,iter); mesh.points = V; mesh.cells = H; save_vtk(mesh, outname);
     end
     
-    out.Vs=Vs;
-    out.Hs=Hs;
+    decompdata.datas = datas;
+    decompdata.Vpresmooth = Vpresmooth;
+    decompdata.cuts = cuts;
+    
+    
+    outname = sprintf('results/%s_%.2d.mat',fname,randi(99));
+    save(outname,'decompdata');
+    close all;
 end
 %{
 V=out.Vs{end}; H=out.Hs{end};
