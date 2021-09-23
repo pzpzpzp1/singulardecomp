@@ -18,4 +18,7 @@ function [Vo,Ho] = padhmesh(V,H)
     %% vis and verify
 %     data = processhmesh(Vo,Ho,1);
 
+%     mesh.points = Vo; mesh.cells = Ho;
+%     save_vtk(mesh, 'test.vtk')
+    
 end

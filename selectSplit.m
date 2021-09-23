@@ -49,7 +49,8 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
     else
         %% finish the existing cut. while avoiding forbidden cuts.
         % could be smart about this but for now lets just make a graph, and
-        % fill it in arbitrarily.        partialpath = alreadycutfaces(node.F_adj);
+        % fill it in arbitrarily.        
+        partialpath = alreadycutfaces(node.F_adj);
         vertscutcount = accumarray(reshape(node.e(partialpath,:),[],1),1);
         assert(all(ismember(vertscutcount,[0 1 2]))); % otherwise, the existing cut already invalidly cuts this node. 
         

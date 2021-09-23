@@ -2,10 +2,10 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
-%         file_name = 'meshes/bunny.vtk';
+        file_name = 'meshes/bunny.vtk';
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
-        % file_name = 'meshes/rockarm.vtk';
+%         file_name = 'meshes/rockarm.vtk'; % NONMANIFOLD BOUNDARY. DONT USE.
 %         file_name = 'meshes/hex_sphere.vtk';
 %         file_name = 'meshes/unit.vtk';
 %         file_name = 'meshes/hex_tetrahedron.vtk';
@@ -13,7 +13,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
 %         file_name = 'meshes/tetpadded.vtk';
 %         file_name = 'meshes/sing1.vtk';
 %         file_name = 'meshes/sing2.vtk';
-        file_name = 'meshes/sing3.vtk';
+%         file_name = 'meshes/sing3.vtk';
 %         file_name = 'meshes/kitten.mesh';
         
         mesh = load_vtk(file_name);
@@ -27,7 +27,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     [dname,fname,ext]=fileparts(file_name);
     V=V0;H=H0;
     data = processhmesh(V,H,0);
-    if (any(data.isSingularNode & data.isBoundaryVertex) && false) || contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk')
+    if (any(data.isSingularNode & data.isBoundaryVertex) && false) ||...
+            contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk') || contains(file_name,'bunny.vtk')
         [V,H] = padhmesh(V,H);
         % [V,H] = hex1to8(V,H); [V,H] = hex1to8(V,H);
         % V = smoothenhmesh(V,H,[],visualize);
