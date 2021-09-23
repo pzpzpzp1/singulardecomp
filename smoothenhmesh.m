@@ -67,7 +67,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;    
     energybreakdown = [];
-    lfac = 5000; lfac = 10;
+    lfac = 5000; lfac = 100;
     for i=1:maxiters
         Vs{i}=V;
         if visualize

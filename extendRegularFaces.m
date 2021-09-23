@@ -1,5 +1,7 @@
 % get set of faces that are adjacent to faceseed in a regular region. will
 % stop at paralell singular edges or boundary.
+
+% TODO: ADD RECURSION TO COVER 90 DEG TURNS
 function cutfaces = extendRegularFaces(data, faceseed)
     cutfaces = false(size(data.F,1),1);
     edgeseeds = data.F2Earray(faceseed,:);

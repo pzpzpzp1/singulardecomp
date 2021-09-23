@@ -2,7 +2,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
-        file_name = 'meshes/bunny.vtk';
+%         file_name = 'meshes/bunny.vtk';
+        file_name = 'meshes/Lpadded.vtk';
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
 %         file_name = 'meshes/rockarm.vtk'; % NONMANIFOLD BOUNDARY. DONT USE.
@@ -28,7 +29,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     V=V0;H=H0;
     data = processhmesh(V,H,0);
     if (any(data.isSingularNode & data.isBoundaryVertex) && false) ||...
-            contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk') || contains(file_name,'bunny.vtk')
+            contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk') || contains(file_name,'bunny.vtk'); % || ...
+            % contains(file_name,'Lblock.vtk')
         [V,H] = padhmesh(V,H);
         % [V,H] = hex1to8(V,H); [V,H] = hex1to8(V,H);
         % V = smoothenhmesh(V,H,[],visualize);
@@ -55,10 +57,13 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     %% Begin decomposition
     datas{1} = data;
     iter = 2;
+    selinds = [];
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
         singularNodes = find(data.isSingularNode & ~data.isBoundaryVertex);
-        selind = randi(numel(singularNodes)); 
+        selind = randi(numel(singularNodes))
+        % selind = 1; 
+        selinds(end+1) = selind;
         node_ind = singularNodes(selind);
         
         %% build map from singular node to T(S2)

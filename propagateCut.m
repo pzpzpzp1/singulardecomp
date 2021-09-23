@@ -31,8 +31,18 @@ function cutfaces = propagateCut(data,startnode,cutseed)
         cutnodes = intersect(unique(data.F(cutfaces,:)), find(data.isSingularNode));
         unresolvednodes = setdiff(cutnodes, resolvednodes);
         if numel(unresolvednodes)==0
-            % no singular nodes are left hanging. means the cut can go through now.
-            break;
+            cutQM = getQMfromCut(data,cutfaces);
+            if all(data.isBoundaryEdge(cutQM.HmeshCutBoundaryEdgeInds)); 
+                % Cut starts and ends on boundary of hex mesh. Can try to sheet insert now.
+                break;
+            else
+                % no singular nodes on cut boundary, but part of the cut boundary is entirely interior singular edge.
+                % make up an unresolved node on the interior singular curve
+                unresolvednodes = unique(data.E(data.isBoundaryEdge(cutQM.HmeshCutBoundaryEdgeInds),:));
+                unresolvednodes(data.isBoundaryVertex)=[];
+                
+                unresolvednodes = 0;
+            end
         end
         % pull off next singular node to process
         node = getNode(data, unresolvednodes(1)); 
