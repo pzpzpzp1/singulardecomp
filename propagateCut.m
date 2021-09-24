@@ -12,7 +12,7 @@ function cutfaces = propagateCut(data,startnode,cutseed)
         if forbiddenfaces(forbiddenseed(i))==false
             forbiddenfaces(extendRegularFaces(data, forbiddenseed(i)))=true;
         end
-        patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
+        % patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
     end
     
     cutfaces = false(size(data.F,1),1);
@@ -61,7 +61,7 @@ function cutfaces = propagateCut(data,startnode,cutseed)
             if forbiddenfaces(forbiddenseed(i))==false
                 forbiddenfaces(extendRegularFaces(data, forbiddenseed(i)))=true;
             end
-            patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
+            % patch('vertices',data.V,'faces',data.F(forbiddenfaces,:),'facecolor','r','facealpha',.5);
         end
         
         % this node is now resolved. it is cut and cannot be cut further.

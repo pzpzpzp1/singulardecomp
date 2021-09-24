@@ -64,13 +64,18 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     %% Begin decomposition
     datas{1} = data;
     iter = 2;
-    selinds = [];
+    selinds = [1 1 2 3   3 4 1 1 1 1 1 1 1 1 1 1 1 1];
+    notskip = true;
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
         singularNodes = find(data.isSingularNode & ~data.isBoundaryVertex);
-        selind = randi(numel(singularNodes))
-        % selind = 1; 
-        selinds(end+1) = selind;
+        for i=1:numel(singularNodes)
+            nodes{i} = getNode(data, singularNodes(i));
+        end
+        
+        interiorsingularnodedegrees = sum(data.E2V(data.isSingularEdge,singularNodes),1);
+%         selind = randi(numel(singularNodes))
+        selind = selinds(iter); 
         node_ind = singularNodes(selind);
         
         %% build map from singular node to T(S2)
@@ -82,8 +87,12 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         %% propagate sheet
         cut = false(data.nF,1); cut(cutseed)=true;
         
-        cut = propagateCut(data,node,cutseed);
+        if notskip
+            cut = propagateCut(data,node,cutseed);
+        end
+        
         cuts{iter-1} = cut;
+        % data = processhmesh(V,H,visualize); title(num2str(iter));
         ptc = patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
         
         %% insert sheet

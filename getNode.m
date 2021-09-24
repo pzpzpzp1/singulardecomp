@@ -48,6 +48,9 @@ function node = getNode(data, node_ind)
     node.F_adj = F_adj;
     node.ind = node_ind;
     
+    
+    node.signature = accumarray(data.efdeg(node.v2E),1); if numel(node.signature) < 8; mode.signature(8)=0; end;
+    
     %% visualize and verify
     %{
     figure; hold all; axis equal off; rotate3d on;
