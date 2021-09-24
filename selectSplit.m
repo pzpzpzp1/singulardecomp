@@ -10,7 +10,7 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         assert(all(~forbiddenfaces)); % no existing cuts means nothing should be off limits to cut.
         %% tetrahedral type
         if numel(node.v)==4
-            % handle split on tetrahedral singularity type
+            %% (4,0,0) type is a 3 and 3 joined perpendicularly.
             vpath = [1 2 3 4];
             [allf, relevantEinds] = ismember(sort([vpath; circshift(vpath,-1)]',2), sort(node.e,2), 'rows');
             assert(all(allf));
@@ -23,7 +23,7 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         if sum(signature(6:end))==0
             % only 3,4,5 singularities. must fit into the list of 10 interior singular node types.
             if all(signature(3:5)==[2 2 2]')
-                %% (2,2,2) type is a 3-5 joined perpendicularly.
+                %% (2,2,2) type is a 3 and 5 joined perpendicularly.
                 % they can be pulled apart by picking all faces adjacent to one deg 3 and one deg 5 singular edge
                 vdegs = data.efdeg(node.v2E);
                 edegs = sort(vdegs(node.e),2);
@@ -71,6 +71,54 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
                 startv = find(vdegs==5,1);
                 adjv = setdiff(node.e(sum(node.e==startv,2)~=0,:),startv);
                 secondv = adjv(find(vdegs(adjv)==4,1));
+                % get all triangles adj to these two.
+                side1 = sum(ismember(node.t, [startv, secondv]),2)~=0;
+                
+                % get boundary edges of side1 tris
+                side1edges = reshape(permute(reshape(node.t(side1,[1 2, 2 3, 3 1]),[],2,3),[1 3 2]),[],2);
+                [side1edges_unique,ia,ic] = unique(sort(side1edges,2),'rows');
+                boundarye = side1edges_unique(find(accumarray(ic,1)==1),:);
+                [~,boundaryeinds] = ismember(boundarye, sort(node.e,2), 'rows')
+                node.e2F(boundaryeinds);
+                cutfaces = node.e2F(boundaryeinds);
+                
+                return;
+            end
+            
+            if all(signature(3:5)==[2 0 6]')
+                %% (2 0 6) = (1 3 3) + (1 3 3).
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                
+                % get a starting val 5 v and a val 3 v adjacent to that
+                % first val 5 v.
+                startv = find(vdegs==5,1);
+                adjv = setdiff(node.e(sum(node.e==startv,2)~=0,:),startv);
+                secondv = adjv(find(vdegs(adjv)==3,1));
+                % get all triangles adj to these two.
+                side1 = sum(ismember(node.t, [startv, secondv]),2)~=0;
+                
+                % get boundary edges of side1 tris
+                side1edges = reshape(permute(reshape(node.t(side1,[1 2, 2 3, 3 1]),[],2,3),[1 3 2]),[],2);
+                [side1edges_unique,ia,ic] = unique(sort(side1edges,2),'rows');
+                boundarye = side1edges_unique(find(accumarray(ic,1)==1),:);
+                [~,boundaryeinds] = ismember(boundarye, sort(node.e,2), 'rows')
+                node.e2F(boundaryeinds);
+                cutfaces = node.e2F(boundaryeinds);
+                
+                return;
+            end
+            
+            if all(signature(3:5)==[0 2 8]')
+                %% (0, 2, 8) = (0, 3, 6) + (0, 4, 4)
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                
+                % get a starting val 4 v and a val 5 v adjacent to that
+                % first val 4 v.
+                startv = find(vdegs==4,1);
+                adjv = setdiff(node.e(sum(node.e==startv,2)~=0,:),startv);
+                secondv = adjv(find(vdegs(adjv)==5,1));
                 % get all triangles adj to these two.
                 side1 = sum(ismember(node.t, [startv, secondv]),2)~=0;
                 
