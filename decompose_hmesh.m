@@ -64,12 +64,12 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     %% Begin decomposition
     datas{1} = data;
     iter = 2;
-    selinds = [1 1 2 3   3 4 1 1 1 1 1 1 1 1 1 1 1 1];
+    selinds = [1 1 2 3 1 3  3   1 1 1 1 1 1 1 1 1 1 1];
     notskip = true;
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
         singularNodes = find(data.isSingularNode & ~data.isBoundaryVertex);
-        for i=1:numel(singularNodes)
+        nodes={}; for i=1:numel(singularNodes)
             nodes{i} = getNode(data, singularNodes(i));
         end
         
@@ -85,11 +85,22 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         cutseed = selectSplit(data,node);
         
         %% propagate sheet
+        if iter == 5
+            cutseed = [65    69   128   166   168   170   172   173   174   175 169];
+            notskip = false;
+        elseif iter == 6
+            cutseed = [21    24    54    55   109   125   160   165   166   169   170   201   202 164]
+            notskip = false;
+        elseif iter == 8
+            cutseed = [274 275 38    39    82    83   124   143   224   225   235   236   266   269   270   272   273   276   281   282   283   284];
+            notskip = false;
+        end
         cut = false(data.nF,1); cut(cutseed)=true;
-        
+            
         if notskip
             cut = propagateCut(data,node,cutseed);
         end
+        notskip = true;
         
         cuts{iter-1} = cut;
         % data = processhmesh(V,H,visualize); title(num2str(iter));

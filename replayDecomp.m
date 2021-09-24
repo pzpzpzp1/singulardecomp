@@ -13,7 +13,8 @@ function replayDecomp(decompdata)
 %         load results/sing044_73/decompdata.mat;
 %         load results/sing036_32/decompdata.mat;
 %         load results/sing206_69/decompdata.mat;
-        load results/sing028_39/decompdata.mat;
+%         load results/sing028_39/decompdata.mat;
+        load results/sing0012_65/decompdata.mat;
     end
     
     datas = decompdata.datas;

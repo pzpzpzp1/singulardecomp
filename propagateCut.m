@@ -36,12 +36,12 @@ function cutfaces = propagateCut(data,startnode,cutseed)
                 % Cut starts and ends on boundary of hex mesh. Can try to sheet insert now.
                 break;
             else
+                patch('vertices',data.V,'faces',data.E(cutQM.HmeshCutBoundaryEdgeInds,[1 2 1]),'edgecolor','y','linewidth',2);
+                
                 % no singular nodes on cut boundary, but part of the cut boundary is entirely interior singular edge.
                 % make up an unresolved node on the interior singular curve
-                unresolvednodes = unique(data.E(data.isBoundaryEdge(cutQM.HmeshCutBoundaryEdgeInds),:));
-                unresolvednodes(data.isBoundaryVertex)=[];
-                
-                unresolvednodes = 0;
+                unresolvednodes = unique(data.E(cutQM.HmeshCutBoundaryEdgeInds,:));
+                unresolvednodes = setdiff(unresolvednodes, find(data.isBoundaryVertex));
             end
         end
         % pull off next singular node to process
