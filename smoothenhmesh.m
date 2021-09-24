@@ -10,7 +10,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
         V0 = mesh.points;
         H = mesh.cells;
         visualize = 1;
-        preLapSmooth = 1;
+        preLapSmooth = 1; % this essentially jostles the mesh.
 %         [V0,H] = hex1to8(V0,H); [V0,H] = hex1to8(V0,H); 
         lfac = 500;
     end

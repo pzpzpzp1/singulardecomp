@@ -3,7 +3,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
 %         file_name = 'meshes/bunny.vtk';
-        file_name = 'meshes/Lpadded.vtk';
+%         file_name = 'meshes/Lpadded.vtk';
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
 %         file_name = 'meshes/rockarm.vtk'; % NONMANIFOLD BOUNDARY. DONT USE.
@@ -16,6 +16,13 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
 %         file_name = 'meshes/sing2.vtk';
 %         file_name = 'meshes/sing3.vtk';
 %         file_name = 'meshes/kitten.mesh';
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing133.vtk'; % 1-3 turning point and val 5.
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing044.vtk'; % two val 5's 
+        file_name = 'extractSingularVertsFromTri/hmeshSings/sing206.vtk'; % two val 5's + one val 3
+        file_name = 'extractSingularVertsFromTri/hmeshSings/sing036.vtk'; % three val 5's
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing028.vtk'; % four val 5's
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing0012.vtk'; % six val 5's
         
         mesh = load_vtk(file_name);
 %         mesh = ImportHexMesh(file_name);
@@ -73,16 +80,18 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         cutseed = selectSplit(data,node);
         
         %% propagate sheet
+        cut = false(data.nF,1); cut(cutseed)=true;
+        
         cut = propagateCut(data,node,cutseed);
         cuts{iter-1} = cut;
-        patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
+        ptc = patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
         
         %% insert sheet
         [V,H,hexSheetInds{iter-1}]=sheetinsertion(data, cut);
         Vpresmooth{iter-1} = V;
         
         %% geometric simplification
-        V = smoothenhmesh(V,H,trimesh0,visualize);
+        V = smoothenhmesh(V,H,trimesh0,visualize, 1, [], 100);
 %{
           mesh.points = V; mesh.cells = H;
           new_mesh = repair_mesh(mesh)

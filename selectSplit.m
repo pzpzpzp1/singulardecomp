@@ -25,22 +25,64 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
             if all(signature(3:5)==[2 2 2]')
                 %% (2,2,2) type is a 3-5 joined perpendicularly.
                 % they can be pulled apart by picking all faces adjacent to one deg 3 and one deg 5 singular edge
-                relverts = find(ismember(data.efdeg(node.v2E),[3 5]));
-                relvertsdeg5ind = data.efdeg(node.v2E(relverts,:))==5;
-                relvertsdeg5 = relverts(relvertsdeg5ind)';
-                 
-                relevantEinds = find(all(ismember(node.e,relverts),2));
-                nodeedges = node.e(relevantEinds,:);
-                skipind = ismember(sort(relvertsdeg5, 2), sort(nodeedges,2),'rows');
-                relevantEinds(skipind,:)=[];
-                
-                cutfaces = node.e2F(relevantEinds);
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                cutfaces = node.e2F(ismember(sort(edegs,2),[3 5],'rows'));
                 return;
             end
 
+            if all(signature(3:5)==[1 3 3]')
+                %% (1,3,3) type is a 3-5 joined with a val 5.
+                % the cut traverses degree 5,5,5,4 vertices in this
+                % triangulation to pull a valence 5 curve off of it.
+                vdegs = data.efdeg(node.v2E);
+                tdegs = sort(vdegs(node.t),2);
+                edegs = sort(vdegs(node.e),2);
+                e55inds = find(ismember(edegs, [5 5],'rows'));
+                cutfaces1 = node.e2F(e55inds(1:2)); 
+                
+                midp = intersect(node.e(e55inds(1),:), node.e(e55inds(2),:));
+                aa = setdiff(node.e(e55inds(1),:),midp);
+                bb = setdiff(node.e(e55inds(2),:),midp);
+                candt = find(ismember(tdegs,[4 5 5],'rows'));
+                aabb = setdiff(node.t(candt(sum(ismember(node.t(candt,:), [aa bb]),2)==2),:),[aa bb]);
+                
+                cutfaces2 = node.e2F(ismember(sort(node.e,2),sort([aabb aa; aabb bb],2),'rows'));
+                cutfaces = [cutfaces1;cutfaces2];
+                return;
+            end
+            
             if all(signature(3:5)==[0 4 4]')
                 %% (0,4,4) type is a 5-5 joined perpendicularly
-                error('unhandled');
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                
+                cutfaces = node.e2F(ismember(sort(edegs,2),[5 5],'rows'));
+                return;
+            end
+            
+            if all(signature(3:5)==[0 3 6]')
+                %% (0,3,6) type is two (0,4,4)s joined at a valence 5.
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                
+                % get a starting val 5 v and a val 4 v adjacent to that
+                % first val 5 v.
+                startv = find(vdegs==5,1);
+                adjv = setdiff(node.e(sum(node.e==startv,2)~=0,:),startv);
+                secondv = adjv(find(vdegs(adjv)==4,1));
+                % get all triangles adj to these two.
+                side1 = sum(ismember(node.t, [startv, secondv]),2)~=0;
+                
+                % get boundary edges of side1 tris
+                side1edges = reshape(permute(reshape(node.t(side1,[1 2, 2 3, 3 1]),[],2,3),[1 3 2]),[],2);
+                [side1edges_unique,ia,ic] = unique(sort(side1edges,2),'rows');
+                boundarye = side1edges_unique(find(accumarray(ic,1)==1),:);
+                [~,boundaryeinds] = ismember(boundarye, sort(node.e,2), 'rows')
+                node.e2F(boundaryeinds);
+                cutfaces = node.e2F(boundaryeinds);
+                
+                return;
             end
         end
         
