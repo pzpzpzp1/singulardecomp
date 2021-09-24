@@ -1,7 +1,7 @@
 % minimizes dirichlet energy for interior vertices to get smooth equi-edge length mesh
 % also minimizes scaled jacobian to ensure no hex element gets horribly skewed compared to any other
 % DOES NOT PRESERVE BOUNDARY AT ALL. used for topological analysis. boundary isn't much of a concern.
-function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
+function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac)
     if nargin==0
         file_name = 'results/sing1_59/hmesh_2.vtk';
 %         file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
@@ -10,7 +10,9 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
         V0 = mesh.points;
         H = mesh.cells;
         visualize = 1;
+        preLapSmooth = 1;
 %         [V0,H] = hex1to8(V0,H); [V0,H] = hex1to8(V0,H); 
+        lfac = 500;
     end
     
     if visualize
@@ -21,53 +23,60 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
     centroid = (min(V0)+max(V0))/2;
     BBTR = max(V0) - centroid;
     
-    maxiters=1000;
-    V=V0; p=1; 
-    E = hex2edge(H);
-    elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
-    dt = min(elens)/1;
+    V=V0;
     %% just dir E to start. unwinds edges that are too short.
-    for i=1:10
-        Vs{i}=V;
-        if visualize
-            try; delete(ptc); catch; end;
-            ptc = patch('vertices',V,'faces',F,'facealpha',.1,'facecolor','green');
-            drawnow;
-        end
-        [Elap, grad_lap] = dirE(L, V); 
-        
-        % store/accumulate energies
-        grad = grad_lap;
-        
-        % line search. max 50 iterations to get ls to work.
-        for j=1:50
-            candV = V-dt*grad;
-            elap = dirE(L, candV);
-            etot = elap;
-            if etot > Elap
-                dt = dt/2;
-            else
-                break
+    if preLapSmooth
+        E = hex2edge(H);
+        elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
+        dt = min(elens)/1;
+        for i=1:10
+            Vs{i}=V;
+            if visualize
+                try; delete(ptc); catch; end;
+                ptc = patch('vertices',V,'faces',F,'facealpha',.1,'facecolor','green');
+                drawnow;
             end
+            [Elap, grad_lap] = dirE(L, V); 
+
+            % store/accumulate energies
+            grad = grad_lap;
+            grad(fixednodes,:)=0;
+
+            % line search. max 50 iterations to get ls to work.
+            for j=1:50
+                candV = V-dt*grad;
+                elap = dirE(L, candV);
+                etot = elap;
+                if etot > Elap
+                    dt = dt/2;
+                else
+                    break
+                end
+            end
+            dt = dt*(2^(1/4));
+            dts(i) = dt;
+
+            % update V. and recenter/rescale
+            V = V - dt*grad;
+            newC = (min(V)+max(V))/2;
+            newBBTR = max(V)-newC;
+            V=V-newC;
+            V=V.*BBTR./newBBTR;
+            V=V+newC;
         end
-        dt = dt*(2^(1/4));
-        dts(i) = dt;
-        
-        % update V. and recenter/rescale
-        V = V - dt*grad;
-        newC = (min(V)+max(V))/2;
-        newBBTR = max(V)-newC;
-        V=V-newC;
-        V=V.*BBTR./newBBTR;
-        V=V+newC;
     end
     
     %% joint minimization
+    
+    maxiters=1000;
+    p=2; 
     E = hex2edge(H);
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;    
-    energybreakdown = [];
-    lfac = 5000; lfac = 100;
+    energybreakdown = []; minSJ=[]; maxSJ=[];
+%     lfac = 5000; 
+%     lfac = 500;
+%     lfac = 0;
     for i=1:maxiters
         Vs{i}=V;
         if visualize
@@ -78,6 +87,10 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
         
         [Esj, grad_sj, out] = scaledJacobian_hmesh(V,H,p);
         [Elap, grad_lap] = dirE(L, V); grad_lap(data.isBoundaryVertex,:) = 0;
+        minSJ(i) = min(out.SJ);
+        maxSJ(i) = max(out.SJ);
+        
+        % mesh.points = V; mesh.cells = H; save_vtk(mesh, 'test.vtk');
         
         % store/accumulate energies
         if i==1
@@ -87,8 +100,23 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
         energybreakdown(i,2) = Elap/norm2;
         energy(i) = Esj/norm1 + lfac*Elap/norm2;
         grad = grad_sj/norm2 + lfac*grad_lap/norm2;
+        grad(fixednodes,:)=0;
+        
+        %{
+        % remove gradients with norms that are too large.
+        gradnorms = vecnorm(grad,2,2);
+        unstablegrad = find(gradnorms > (mean(gradnorms)+std(gradnorms)*3));
+        if numel(unstablegrad)~=0
+            stc = scatter3(V(unstablegrad,1),V(unstablegrad,2),V(unstablegrad,3),'r','filled');
+            qvr = quiver3(V(unstablegrad,1),V(unstablegrad,2),V(unstablegrad,3),grad(unstablegrad,1),grad(unstablegrad,2),grad(unstablegrad,3));
+            delete(stc);
+            delete(qvr);
+        end
+        grad(unstablegrad,:)=0;
+        %}
         
         % line search. max 50 iterations to get ls to work.
+        
         for j=1:50
             candV = V-dt*grad;
             esj = scaledJacobian_hmesh(candV,H,p);
@@ -101,16 +129,38 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize)
             end
         end
         dt = dt*(2^(1/4));
+        % hindsight adaptive timestep.
+%         if i~=1
+%             if energy(i) > energy(i-1)
+%                 dt=dt/2;
+%             else
+%                 dt=dt*sqrt(2);
+%             end
+%         end
         dts(i) = dt;
-        
+        if dt < 1e-7
+            display('timestep too small.');
+            break;
+        end
+    
         % update V
         V = V - dt*grad;
+        
+        if i>30
+            if energy(i-30)-energy(i) < .002
+                display('converged');
+                break;
+            end
+        end
+        
     end
+    out.minSJ = minSJ;
+    out.maxSJ = maxSJ;
     out.Vs = Vs;
     out.energy = energy;
     out.dts = dts;
     out.energybreakdown=energybreakdown;
-    
+    % mesh.points = V; mesh.cells = H; save_vtk(mesh, 'test.vtk');
     
     
     
