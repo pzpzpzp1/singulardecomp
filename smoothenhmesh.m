@@ -1,7 +1,7 @@
 % minimizes dirichlet energy for interior vertices to get smooth equi-edge length mesh
 % also minimizes scaled jacobian to ensure no hex element gets horribly skewed compared to any other
 % DOES NOT PRESERVE BOUNDARY AT ALL. used for topological analysis. boundary isn't much of a concern.
-function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac)
+function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac,p)
     if nargin==0
         file_name = 'results/sing1_59/hmesh_2.vtk';
 %         file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
@@ -13,6 +13,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
         preLapSmooth = 1; % this essentially jostles the mesh.
 %         [V0,H] = hex1to8(V0,H); [V0,H] = hex1to8(V0,H); 
         lfac = 500;
+        p = 2;
     end
     
     if visualize
@@ -69,7 +70,6 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
     %% joint minimization
     
     maxiters=1000;
-    p=2; 
     E = hex2edge(H);
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;    
