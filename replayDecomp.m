@@ -2,12 +2,13 @@ function replayDecomp(decompdata)
     if nargin==0
         close all; clc;
 %         decompdata = decompose_hmesh; % save('decompdata2.mat','decompdata');
-%         filename='results/unit_70/decompdata.mat';
-%         filename='results/unit_15/decompdata.mat';
+%         filename='results/unit_70/decompdata.mat'; lwfac = .5; cpos=[-6.7853      -10.909       5.0505]; cpos = [ -0.59946     -0.79364       10.618];
+%         filename='results/unit_15/decompdata.mat'; lwfac = .5; cpos=[-6.7853      -10.909       5.0505]; cpos=[-1.8606      -11.936      0.53508];
 %         filename='results/sing1_59/decompdata.mat';
-%         filename='results/tetpadded_16/decompdata.mat';
-%         filename='results/hex_ellipsoid_coarse_78/decompdata.mat';
+%         filename='results/tetpadded_16/decompdata.mat';  lwfac = .5; 
+        filename='results/hex_ellipsoid_coarse_78/decompdata.mat'; lwfac = .5; cpos=[-8.5277       5.9426       2.1422];
 %          filename='results/sing400_68/decompdata.mat'; cpos = [0.27478 -8.7551       17.758]; 
+%          filename='results/sing400_68/decompdata.mat'; cpos=[17.376          -0.39907      -5.3769]; % view 2. not a great angle.
 %         filename='results/sing2_88/decompdata.mat'; lwfac=.5; cpos=[15.132       -22.09       1.9178];
 %         filename='results/sing3_92/decompdata.mat'; lwfac=.8; cpos=[ 17.899      -8.3873       19.894];
 %         filename='results/sing133_42/decompdata.mat'; 
@@ -24,10 +25,22 @@ function replayDecomp(decompdata)
     imc = 0;
     [dname,fname,ext]=fileparts(filename);
     dname(ismember(dname,'/'))='_';
+%     dname=[dname '_2']; % used for a second view.
+%     dname = 'test'; % used for something we can overwrite.
     outname = ['figures/',dname,'/', dname,'_%d','.png'];
     
     
     datas = decompdata.datas;
+    % get singularities and signatures
+    %{
+    for i=1:numel(datas)
+        d = datas{i};
+        snodes = find(d.isSingularNode & ~d.isBoundaryVertex);
+        for j=1:numel(snodes)
+            sigs{i,j} = getNode(d,snodes(j)).signature
+        end
+    end
+    %}
     Vpresmooth = decompdata.Vpresmooth;
     cuts = decompdata.cuts;
     hexSheetInds = decompdata.hexSheetInds;
@@ -45,8 +58,9 @@ function replayDecomp(decompdata)
         [~, guielems] = visualizeHmeshData(data, fh, lwfac);
         guielems{end+1} = patch('vertices',data.V,'faces',data.F(cuts{i},:),'facecolor','r','facealpha',.5);
 %         title(sprintf('cut %d',i))
-        imc=localsh(outname,imc);
         pause;
+        imc=localsh(outname,imc);
+        
         
         %% plot transition
         tempdata = datas{i+1};
@@ -65,8 +79,9 @@ function replayDecomp(decompdata)
             drawnow;
         end
 %         title(sprintf('post sheet insertion %d',i))
+        pause;        
         imc=localsh(outname,imc);
-        pause;
+        
     end
     
     guielems = deleteElems(guielems);
