@@ -16,13 +16,14 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
 %         file_name = 'meshes/sing2.vtk'; % tri-prism padded
 %         file_name = 'meshes/sing3.vtk'; % 
 %         file_name = 'meshes/kitten.mesh';
+         file_name = 'extractSingularVertsFromTri/hmeshSings/sing400.vtk'; % two val 3's
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing133.vtk'; % 1-3 turning point and val 5.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing044.vtk'; % two val 5's 
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing036.vtk'; % three val 5's
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing206.vtk'; % two val 5's + one val 3
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing028.vtk'; % four val 5's
-        file_name = 'extractSingularVertsFromTri/hmeshSings/sing0012.vtk'; % six val 5's
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing0012.vtk'; % six val 5's
         
         mesh = load_vtk(file_name);
 %         mesh = ImportHexMesh(file_name);
@@ -72,10 +73,9 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         nodes={}; for i=1:numel(singularNodes)
             nodes{i} = getNode(data, singularNodes(i));
         end
-        
         interiorsingularnodedegrees = sum(data.E2V(data.isSingularEdge,singularNodes),1);
-%         selind = randi(numel(singularNodes))
-        selind = selinds(iter); 
+        selind = randi(numel(singularNodes))
+%         selind = selinds(iter); 
         node_ind = singularNodes(selind);
         
         %% build map from singular node to T(S2)
@@ -111,7 +111,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         Vpresmooth{iter-1} = V;
         
         %% geometric simplification
-        V = smoothenhmesh(V,H,trimesh0,visualize, 1, [], 100);
+        V = smoothenhmesh(V,H,trimesh0,visualize, 1, [], 100, 2, 0);
 %{
           mesh.points = V; mesh.cells = H;
           new_mesh = repair_mesh(mesh)

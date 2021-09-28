@@ -2,35 +2,50 @@ function replayDecomp(decompdata)
     if nargin==0
         close all; clc;
 %         decompdata = decompose_hmesh; % save('decompdata2.mat','decompdata');
-%         load results/unit_70/decompdata.mat;
-%         load results/unit_15/decompdata.mat;
-%         load results/sing1_59/decompdata.mat;
-%         load results/tetpadded_16/decompdata.mat;
-%         load results/hex_ellipsoid_coarse_78/decompdata.mat;
-%         load results/sing2_88/decompdata.mat;
-        load results/sing3_92/decompdata.mat;
-%         load results/sing133_42/decompdata.mat;
-%         load results/sing044_73/decompdata.mat;
-%         load results/sing036_32/decompdata.mat;
-%         load results/sing206_69/decompdata.mat;
-%         load results/sing028_39/decompdata.mat;
-%         load results/sing0012_65/decompdata.mat;
+%         filename='results/unit_70/decompdata.mat';
+%         filename='results/unit_15/decompdata.mat';
+%         filename='results/sing1_59/decompdata.mat';
+%         filename='results/tetpadded_16/decompdata.mat';
+%         filename='results/hex_ellipsoid_coarse_78/decompdata.mat';
+%          filename='results/sing400_68/decompdata.mat'; cpos = [0.27478 -8.7551       17.758]; 
+%         filename='results/sing2_88/decompdata.mat'; lwfac=.5; cpos=[15.132       -22.09       1.9178];
+%         filename='results/sing3_92/decompdata.mat'; lwfac=.8; cpos=[ 17.899      -8.3873       19.894];
+%         filename='results/sing133_42/decompdata.mat'; 
+%         filename='results/sing044_73/decompdata.mat'; cpos=[0.17802      -6.5468       30.996];
+%         filename='results/sing036_32/decompdata.mat'; cpos=[-0.059017    -0.086719        41.25];
+%         filename='results/sing206_69/decompdata.mat'; cpos=[-11.68      -34.268       2.9365]; lwfac=.7;
+%         filename='results/sing028_39/decompdata.mat'; lwfac=.5; cpos=[ 2.1639      -29.849       30.217];
+        filename='results/sing0012_65/decompdata.mat'; lwfac=.5; 
+
+        load(filename);
     end
+    if ~exist('lwfac','var'); lwfac=1; end;
+    
+    imc = 0;
+    [dname,fname,ext]=fileparts(filename);
+    dname(ismember(dname,'/'))='_';
+    outname = ['figures/',dname,'/', dname,'_%d','.png'];
+    
     
     datas = decompdata.datas;
     Vpresmooth = decompdata.Vpresmooth;
     cuts = decompdata.cuts;
     hexSheetInds = decompdata.hexSheetInds;
     
-    fh = figure; guielems={};
+    fh = figure('units','normalized','outerposition',[0 0 1 1]); set(gcf,'color','w');
+    if exist('cpos','var'); campos(cpos); end;
+    [~, guielems] = visualizeHmeshData(datas{1}, fh, lwfac);
+    pause; campos
+    imc=localsh(outname,imc);
     for i=1:numel(cuts)
         guielems = deleteElems(guielems); % clean slate
         
         data = datas{i};
         %% plot current state and selected cut sheet
-        [~, guielems] = visualizeHmeshData(data, fh);
-        guielems{end+1} = patch('vertices',data.V,'faces',data.F(cuts{i},:),'facecolor','r','facealpha',.9);
-        title(sprintf('cut %d',i))
+        [~, guielems] = visualizeHmeshData(data, fh, lwfac);
+        guielems{end+1} = patch('vertices',data.V,'faces',data.F(cuts{i},:),'facecolor','r','facealpha',.5);
+%         title(sprintf('cut %d',i))
+        imc=localsh(outname,imc);
         pause;
         
         %% plot transition
@@ -42,20 +57,32 @@ function replayDecomp(decompdata)
             guielems = deleteElems(guielems);
             Vi = Vold*(1-ts(ti)) + Vnew*ts(ti);
             tempdata.V = Vi;
-            [~, guielems] = visualizeHmeshData(tempdata,fh);
+            [~, guielems] = visualizeHmeshData(tempdata,fh, lwfac);
             
             insertionlayerfaces = unique(tempdata.H2Farray(hexSheetInds{i},:));
-            guielems{end+1} = patch('vertices',tempdata.V,'faces',tempdata.F(insertionlayerfaces,:),'facecolor','c','facealpha',.4);
+            guielems{end+1} = patch('vertices',tempdata.V,'faces',tempdata.F(insertionlayerfaces,:),'facecolor','b','facealpha',.2);
             
             drawnow;
         end
-        title(sprintf('post sheet insertion %d',i))
+%         title(sprintf('post sheet insertion %d',i))
+        imc=localsh(outname,imc);
         pause;
     end
     
     guielems = deleteElems(guielems);
-    [~, guielems] = visualizeHmeshData(tempdata,fh);
+    [~, guielems] = visualizeHmeshData(tempdata,fh, lwfac);
+    imc=localsh(outname,imc);
     
+end
+
+function imc=localsh(outname,imc)
+    pic=getframe(gcf);
+    pic2=RemoveWhiteSpace(pic.cdata);
+    oname = sprintf(outname,imc);
+    dname = fileparts(oname);
+    mkdir(dname);
+    imwrite(pic2, oname);
+    imc=imc+1;
 end
 
 function guielems = deleteElems(guielems)
