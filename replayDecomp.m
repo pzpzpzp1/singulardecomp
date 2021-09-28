@@ -15,7 +15,7 @@ function replayDecomp(decompdata)
 %         filename='results/sing036_32/decompdata.mat'; cpos=[-0.059017    -0.086719        41.25];
 %         filename='results/sing206_69/decompdata.mat'; cpos=[-11.68      -34.268       2.9365]; lwfac=.7;
 %         filename='results/sing028_39/decompdata.mat'; lwfac=.5; cpos=[ 2.1639      -29.849       30.217];
-        filename='results/sing0012_65/decompdata.mat'; lwfac=.5; 
+%         filename='results/sing0012_65/decompdata.mat'; lwfac=.5; 
 
         load(filename);
     end
