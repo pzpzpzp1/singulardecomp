@@ -31,7 +31,8 @@ clear all; close all;
 % file_name = 'results/unit_15/hmesh_1.vtk'; skipL = 1;
 % file_name = 'results/unit_15/hmesh_5.vtk'; 
 % file_name = 'results/unit_70/hmesh_1.vtk';  skipL = 1;
-file_name = 'results/unit_70/hmesh_5.vtk'; 
+% file_name = 'results/unit_70/hmesh_5.vtk'; 
+file_name = 'meshes/hex_sphere.vtk'; fixb = 1; skipL=1;
 
 mesh = load_vtk(file_name);
 V0 = mesh.points;
@@ -40,16 +41,19 @@ H = mesh.cells;
 if ~exist('skipL','var')
     skipL = 0;
 end
+if ~exist('fixb','var')
+    fixb = 1;
+end
 
 if ~skipL
-    [V, out] = smoothenhmesh(V0, H, [], 1, 1, [], 0, 2);
+    [V, out] = smoothenhmesh(V0, H, [], 1, 1, [], 0, 2,fixb);
 else
     V=V0;
 end
 
-[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 2);
-[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 4);
-[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 8);
+[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 2, fixb);
+[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 4, fixb);
+[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 8, fixb);
 mesh.points = V;
 
 [dname,fname,ext] = fileparts(file_name);

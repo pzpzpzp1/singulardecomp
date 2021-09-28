@@ -1,7 +1,7 @@
 % minimizes dirichlet energy for interior vertices to get smooth equi-edge length mesh
 % also minimizes scaled jacobian to ensure no hex element gets horribly skewed compared to any other
 % DOES NOT PRESERVE BOUNDARY AT ALL. used for topological analysis. boundary isn't much of a concern.
-function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac,p)
+function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac,p,fixb)
     if nargin==0
         file_name = 'results/sing1_59/hmesh_2.vtk';
 %         file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
@@ -12,8 +12,9 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
         visualize = 1;
         preLapSmooth = 1; % this essentially jostles the mesh.
 %         [V0,H] = hex1to8(V0,H); [V0,H] = hex1to8(V0,H); 
-        lfac = 500;
-        p = 2;
+        lfac = 500; % scaling factor on laplacian
+        p = 2; % p norm
+        fixb = false; % fixed boundary;
     end
     
     if visualize
@@ -42,6 +43,9 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
             % store/accumulate energies
             grad = grad_lap;
             grad(fixednodes,:)=0;
+            if fixb
+                grad(data.isBoundaryVertex,:)=0;
+            end
 
             % line search. max 50 iterations to get ls to work.
             for j=1:50
@@ -101,6 +105,9 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
         energy(i) = Esj/norm1 + lfac*Elap/norm2;
         grad = grad_sj/norm2 + lfac*grad_lap/norm2;
         grad(fixednodes,:)=0;
+        if fixb
+            grad(data.isBoundaryVertex,:)=0;
+        end
         
         %{
         % remove gradients with norms that are too large.
