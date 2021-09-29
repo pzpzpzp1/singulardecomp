@@ -1,6 +1,6 @@
 % sheet insertion on hex mesh data. cut is a logical bit per face for
 % whether insertion happens there or not.
-function [Vnew,Hnew,hexsheetinds]=sheetinsertion(data, cut)
+function [Vnew,Hnew,hexsheetinds,VnewPreperturb]=sheetinsertion(data, cut)
     %% validation to make sure this cut can be made while preserving that the output is a hex mesh
     QM = getQMfromCut(data,cut);
     assert(all(data.isBoundaryEdge(QM.HmeshCutBoundaryEdgeInds))); % ensures boundary of cut surface is on the boundary of the hex mesh.
@@ -9,7 +9,7 @@ function [Vnew,Hnew,hexsheetinds]=sheetinsertion(data, cut)
     % build new vertices. easy peasy
     oldVind = unique(data.F(cut,:));
     newV = data.V(oldVind,:);
-    Vnew = [data.V; newV;]
+    Vnew = [data.V; newV;];
     newVind = data.nV + (1:size(newV,1));
     
     % get list of all effected hexes in two bins on either side of the cut.
@@ -65,7 +65,8 @@ function [Vnew,Hnew,hexsheetinds]=sheetinsertion(data, cut)
     vn=vn./vecnorm(vn,2,2);
     perturbdir = vn(oldVind,:);
     
-    pertmag = median(data.edgelengths)/50;
+    pertmag = median(data.edgelengths)/10;
+    VnewPreperturb = Vnew;
     Vnew((data.nV+1):end,:) = Vnew((data.nV+1):end,:) + pertmag*perturbdir;
     
     % Create new connectivity

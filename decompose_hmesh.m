@@ -1,4 +1,4 @@
-function decompdata = decompose_hmesh(V0,H0,visualize)
+function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
@@ -16,8 +16,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
 %         file_name = 'meshes/sing2.vtk'; % tri-prism padded
 %         file_name = 'meshes/sing3.vtk'; % 
 %         file_name = 'meshes/kitten.mesh';
-         file_name = 'extractSingularVertsFromTri/hmeshSings/sing400.vtk'; % two val 3's
-%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
+%          file_name = 'extractSingularVertsFromTri/hmeshSings/sing400.vtk'; % two val 3's
+        file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing133.vtk'; % 1-3 turning point and val 5.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing044.vtk'; % two val 5's 
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing036.vtk'; % three val 5's
@@ -30,6 +30,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         V0 = mesh.points;
         H0 = mesh.cells;
         visualize = 1;
+        saveres = 0;
     end
     
     %% load mesh. And preprocess with padding. extract trimesh boundary
@@ -53,10 +54,13 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     
     % save starting mesh as index 0
     saveseed = randi(99);
-    outdname = sprintf('results/%s_%d',fname,saveseed); mkdir(outdname);
+    outdname = sprintf('results/%s_%d',fname,saveseed); 
     outname = sprintf('results/%s_%d/hmesh_1.vtk',fname,saveseed);
     mesh.points = V; mesh.cells = H;
-    save_vtk(mesh, outname)
+    if saveres
+        mkdir(outdname);
+        save_vtk(mesh, outname)
+    end
     
     Vpresmooth={};
     hexSheetInds={};
@@ -107,8 +111,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         ptc = patch('vertices',data.V,'faces',data.F(cut,:),'facecolor','c')
         
         %% insert sheet
-        [V,H,hexSheetInds{iter-1}]=sheetinsertion(data, cut);
-        Vpresmooth{iter-1} = V;
+        [V,H,hexSheetInds{iter-1},VnewPreperturb]=sheetinsertion(data, cut);
+        Vpresmooth{iter-1} = VnewPreperturb;
         
         %% geometric simplification
         V = smoothenhmesh(V,H,trimesh0,visualize, 1, [], 100, 2, 0);
@@ -120,7 +124,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
         %% recompute data
         data = processhmesh(V,H,visualize); title(num2str(iter));
         datas{iter} = data;
-        outname = sprintf('results/%s_%d/hmesh_%d.vtk',fname,saveseed,iter); mesh.points = V; mesh.cells = H; save_vtk(mesh, outname);
+        outname = sprintf('results/%s_%d/hmesh_%d.vtk',fname,saveseed,iter); mesh.points = V; mesh.cells = H; 
+        if saveres; save_vtk(mesh, outname); end;
         iter = iter+1;
     end
     
@@ -130,7 +135,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize)
     decompdata.cuts = cuts;
     
     outname = sprintf('results/%s_%d/decompdata.mat',fname,saveseed);
-    save(outname,'decompdata');
+    if saveres; save(outname,'decompdata'); end;
     close all;
 end
 %{

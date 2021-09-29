@@ -28,6 +28,7 @@ clear all; close all;
 % file_name = 'results/tet_split_notsplit/tetsplit.vtk'; 
 % file_name = 'results/tetpadded_16/hmesh_1.vtk'; skipL = 1; % tet padded
 % file_name = 'results/tetpadded_16/hmesh_4.vtk'; 
+[V, out] = smoothenhmesh(V, H, [], 1, 0, [], 0, 2, fixb);
 % file_name = 'results/unit_15/hmesh_1.vtk'; skipL = 1;
 % file_name = 'results/unit_15/hmesh_5.vtk'; 
 % file_name = 'results/unit_70/hmesh_1.vtk';  skipL = 1;
