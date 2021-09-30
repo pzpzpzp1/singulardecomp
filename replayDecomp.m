@@ -5,9 +5,9 @@ function replayDecomp(decompdata)
 %         filename='results/unit_70/decompdata.mat'; lwfac = .5; cpos=[-6.7853      -10.909       5.0505]; cpos = [ -0.59946     -0.79364       10.618];
 %         filename='results/unit_15/decompdata.mat'; lwfac = .5; cpos=[-6.7853      -10.909       5.0505]; cpos=[-1.8606      -11.936      0.53508];
 %         filename='results/sing1_59/decompdata.mat';
-        filename='results/tetpadded_16/decompdata.mat';  lwfac = .5; 
+%         filename='results/tetpadded_16/decompdata.mat';  lwfac = .5; 
 %         filename='results/hex_ellipsoid_coarse_78/decompdata.mat'; lwfac = .5; cpos=[-8.5277       5.9426       2.1422];
-%         filename='results/Lpadded_77/decompdata.mat'; lwfac = .5; 
+        filename='results/Lpadded_77/decompdata.mat'; lwfac = .5; 
 %         filename='results/hex_sphere_64/decompdata.mat'; lwfac = .5; 
 %          filename='results/sing400_68/decompdata.mat'; cpos = [0.27478 -8.7551       17.758]; 
 %          filename='results/sing400_68/decompdata.mat'; cpos=[17.376          -0.39907      -5.3769]; % view 2. not a great angle.

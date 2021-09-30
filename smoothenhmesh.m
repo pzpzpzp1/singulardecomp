@@ -79,7 +79,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
     
     %% joint minimization
     
-    maxiters=1000;
+    maxiters=100;
     E = hex2edge(H);
     elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
     dt = min(elens)/300;    

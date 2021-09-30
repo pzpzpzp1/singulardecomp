@@ -65,7 +65,7 @@ function [Vnew,Hnew,hexsheetinds,VnewPreperturb]=sheetinsertion(data, cut)
     vn=vn./vecnorm(vn,2,2);
     perturbdir = vn(oldVind,:);
     
-    pertmag = median(data.edgelengths)/2;
+    pertmag = mean(data.edgelengths)/2;
     VnewPreperturb = Vnew;
     Vnew((data.nV+1):end,:) = Vnew((data.nV+1):end,:) + pertmag*perturbdir;
     
