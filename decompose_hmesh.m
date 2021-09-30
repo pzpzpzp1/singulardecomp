@@ -2,12 +2,15 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     close all;  
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
-%         file_name = 'meshes/bunny.vtk';
-%         file_name = 'meshes/Lpadded.vtk';
+%         file_name = 'meshes/bunny.vtk'; lfac = 500; saveres = 1;
+%         file_name = 'meshes/Lpadded.vtk'; lfac = 500; saveres = 1;
+%         file_name = 'meshes/Cblock.vtk'; lfac = 500; saveres = 1;
+%         file_name = 'meshes/Cpadded.vtk'; lfac = 500; saveres = 1;
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
 %         file_name = 'meshes/rockarm.vtk'; % NONMANIFOLD BOUNDARY. DONT USE.
-%         file_name = 'meshes/hex_sphere.vtk';
+%         file_name = 'meshes/hex_sphere.vtk'; lfac = 500; saveres=1;
+        file_name = 'results/tet_split_notsplit/tetnotsplit.vtk'; lfac = 500; saveres=1;
 %         file_name = 'meshes/unit.vtk';
 %         file_name = 'meshes/hex_tetrahedron.vtk';
 %         file_name = 'meshes/hex_ellipsoid_coarse.vtk';
@@ -17,11 +20,11 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
 %         file_name = 'meshes/sing3.vtk'; % 
 %         file_name = 'meshes/kitten.mesh';
 %          file_name = 'extractSingularVertsFromTri/hmeshSings/sing400.vtk'; % two val 3's
-        file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing222.vtk'; % same as sing3. don't need.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing133.vtk'; % 1-3 turning point and val 5.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing044.vtk'; % two val 5's 
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing036.vtk'; % three val 5's
-%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing206.vtk'; % two val 5's + one val 3
+%         file_name = 'extractSingularVertsFromTri/hmeshSings/sing206.vtk'; % two val 5's + one val 3. % this is the one where things start to go bad. needs a 90 deg turn in the cut in a regular area.
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing028.vtk'; % four val 5's
 %         file_name = 'extractSingularVertsFromTri/hmeshSings/sing0012.vtk'; % six val 5's
         
@@ -30,7 +33,9 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
         V0 = mesh.points;
         H0 = mesh.cells;
         visualize = 1;
-        saveres = 0;
+        if ~exist('saveres','var')
+            saveres=0;
+        end
     end
     
     %% load mesh. And preprocess with padding. extract trimesh boundary
@@ -38,11 +43,12 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     V=V0;H=H0;
     data = processhmesh(V,H,0);
     if (any(data.isSingularNode & data.isBoundaryVertex) && false) ||...
-            contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk') || contains(file_name,'bunny.vtk'); % || ...
-            % contains(file_name,'Lblock.vtk')
-        [V,H] = padhmesh(V,H);
+            contains(file_name,'unit.vtk') || contains(file_name,'sing2.vtk') || contains(file_name,'bunny.vtk') || ...
+            contains(file_name,'tetnotsplit.vtk')
+        [V,H] = padhmesh(V,H); % [V,H] = padhmesh(V,H);
         % [V,H] = hex1to8(V,H); [V,H] = hex1to8(V,H);
         % V = smoothenhmesh(V,H,[],visualize);
+        % V = smoothenhmesh(V,H, [],visualize, 1, [], 100, 2, 0, 0);
         % mesh.points = V; mesh.cells = H;
         % save_vtk(mesh, 'test.vtk')
     end
@@ -53,7 +59,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     [trimesh0.Vertices, trimesh0.Faces] = minimizeMesh(trimesh0.Vertices, trimesh0.Faces);
     
     % save starting mesh as index 0
-    saveseed = randi(99);
+    saveseed = randi(99); saveseed=64;
     outdname = sprintf('results/%s_%d',fname,saveseed); 
     outname = sprintf('results/%s_%d/hmesh_1.vtk',fname,saveseed);
     mesh.points = V; mesh.cells = H;
@@ -69,7 +75,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     %% Begin decomposition
     datas{1} = data;
     iter = 2;
-    selinds = [1 1 2 3 1 3  3   1 1 1 1 1 1 1 1 1 1 1];
+%     selinds = [1 1 2 3 1 3  3   1 1 1 1 1 1 1 1 1 1 1]; % 0 0 12
+%     selinds = [5 1 1 1 1 1 1 1 1 1 1 1 1 1];
     notskip = true;
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
@@ -87,17 +94,20 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
         
         %% select sheet to insert in node
         cutseed = selectSplit(data,node);
+        % ptc = patch('vertices',data.V,'faces',data.F(cutseed,:),'facecolor','c')
         
         %% propagate sheet
-        if iter == 5
-            cutseed = [65    69   128   166   168   170   172   173   174   175 169];
-            notskip = false;
-        elseif iter == 6
-            cutseed = [21    24    54    55   109   125   160   165   166   169   170   201   202 164]
-            notskip = false;
-        elseif iter == 8
-            cutseed = [274 275 38    39    82    83   124   143   224   225   235   236   266   269   270   272   273   276   281   282   283   284];
-            notskip = false;
+        if strcmp(fname,'sing0012')
+            if iter == 5
+                cutseed = [65    69   128   166   168   170   172   173   174   175 169];
+                notskip = false;
+            elseif iter == 6
+                cutseed = [21    24    54    55   109   125   160   165   166   169   170   201   202 164]
+                notskip = false;
+            elseif iter == 8
+                cutseed = [274 275 38    39    82    83   124   143   224   225   235   236   266   269   270   272   273   276   281   282   283   284];
+                notskip = false;
+            end
         end
         cut = false(data.nF,1); cut(cutseed)=true;
             
@@ -115,7 +125,11 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
         Vpresmooth{iter-1} = VnewPreperturb;
         
         %% geometric simplification
-        V = smoothenhmesh(V,H,trimesh0,visualize, 1, [], 100, 2, 0);
+        preLapSmooth=0; uniformrot = 0; if ~exist('fixb','var'); fixb = 0; end;
+        V = smoothenhmesh(V,H, [],visualize, preLapSmooth, [], lfac, 2, 0, uniformrot );
+        V = smoothenhmesh(V,H, [],visualize, preLapSmooth, [], lfac, 4, 0, uniformrot );
+        % V = smoothenhmesh(V,H, [],visualize, 0, [], 0, 4, 0, uniformrot );
+
 %{
           mesh.points = V; mesh.cells = H;
           new_mesh = repair_mesh(mesh)

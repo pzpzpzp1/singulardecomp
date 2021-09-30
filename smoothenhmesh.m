@@ -1,7 +1,7 @@
 % minimizes dirichlet energy for interior vertices to get smooth equi-edge length mesh
 % also minimizes scaled jacobian to ensure no hex element gets horribly skewed compared to any other
 % DOES NOT PRESERVE BOUNDARY AT ALL. used for topological analysis. boundary isn't much of a concern.
-function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac,p,fixb)
+function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixednodes,lfac,p,fixb,uniformrot)
     if nargin==0
         file_name = 'results/sing1_59/hmesh_2.vtk';
 %         file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
@@ -15,6 +15,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
         lfac = 500; % scaling factor on laplacian
         p = 2; % p norm
         fixb = false; % fixed boundary;
+        uniformrot = false;
     end
     
     if visualize
@@ -39,7 +40,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
                 drawnow;
             end
             [Elap, grad_lap] = dirE(L, V); 
-
+            Elaps(i) = Elap;
             % store/accumulate energies
             grad = grad_lap;
             grad(fixednodes,:)=0;
@@ -63,11 +64,16 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
 
             % update V. and recenter/rescale
             V = V - dt*grad;
+            
             newC = (min(V)+max(V))/2;
-            newBBTR = max(V)-newC;
+            randR = axang2rotm([randn(1,3) rand*2*pi]);
             V=V-newC;
+            if uniformrot; V=V*randR; end; % rotate so bounding box applies uniformly instead of just on diagonal direcs
+            newBBTR = max(V)-newC; % get BBTR on this rotation. this wont work well for very long skinny meshes. It'll try to force it into not long/skinny.
             V=V.*BBTR./newBBTR;
+            if uniformrot; V=V*randR'; end; % unrotate
             V=V+newC;
+            
         end
     end
     
