@@ -3,7 +3,7 @@ function [fh, guielems] = visualizeHmeshData(data, fh, lwfac)
         fh = figure; 
         lwfac=1;
     end
-    hold all; axis equal off; rotate3d on;
+    hold all; axis equal off; rotate3d on; axis image vis3d;
     
     V=data.V; F=data.F; E=data.E; 
     isSingularNode = data.isSingularNode;

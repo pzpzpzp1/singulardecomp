@@ -5,12 +5,12 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
 %         file_name = 'meshes/bunny.vtk'; lfac = 500; saveres = 1;
 %         file_name = 'meshes/Lpadded.vtk'; lfac = 500; saveres = 1;
 %         file_name = 'meshes/Cblock.vtk'; lfac = 500; saveres = 1;
-%         file_name = 'meshes/Cpadded.vtk'; lfac = 500; saveres = 1;
+        file_name = 'meshes/Cpadded.vtk'; lfac = 500; saveres = 1;
 %         file_name = 'meshes/double-torus.vtk';
 %         file_name = 'meshes/joint.vtk';
 %         file_name = 'meshes/rockarm.vtk'; % NONMANIFOLD BOUNDARY. DONT USE.
 %         file_name = 'meshes/hex_sphere.vtk'; lfac = 500; saveres=1;
-        file_name = 'results/tet_split_notsplit/tetnotsplit.vtk'; lfac = 500; saveres=1;
+%         file_name = 'results/tet_split_notsplit/tetnotsplit.vtk'; lfac = 500; saveres=1;
 %         file_name = 'meshes/unit.vtk';
 %         file_name = 'meshes/hex_tetrahedron.vtk';
 %         file_name = 'meshes/hex_ellipsoid_coarse.vtk';
@@ -76,7 +76,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     datas{1} = data;
     iter = 2;
 %     selinds = [1 1 2 3 1 3  3   1 1 1 1 1 1 1 1 1 1 1]; % 0 0 12
-%     selinds = [5 1 1 1 1 1 1 1 1 1 1 1 1 1];
+    selinds = [1 4 1 1 1 1 1 1 1 1 1 1 1 1];
     notskip = true;
     while any(data.isSingularNode & ~data.isBoundaryVertex)
         %% choose random node to simplify
@@ -85,8 +85,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
             nodes{i} = getNode(data, singularNodes(i));
         end
         interiorsingularnodedegrees = sum(data.E2V(data.isSingularEdge,singularNodes),1);
-        selind = randi(numel(singularNodes))
-%         selind = selinds(iter); 
+%         selind = randi(numel(singularNodes))
+        selind = selinds(iter); 
         node_ind = singularNodes(selind);
         
         %% build map from singular node to T(S2)

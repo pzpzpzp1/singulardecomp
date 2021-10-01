@@ -11,7 +11,8 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         %% tetrahedral type
         if numel(node.v)==4
             %% (4,0,0) type is a 3 and 3 joined perpendicularly.
-            vpath = [1 2 3 4];
+            % vpath = [1 2 3 4];
+            vpath = [1 3 4 2];
             [allf, relevantEinds] = ismember(sort([vpath; circshift(vpath,-1)]',2), sort(node.e,2), 'rows');
             assert(all(allf));
             cutfaces = node.e2F(relevantEinds);

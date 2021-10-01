@@ -1,4 +1,15 @@
-function [logicalchord, facechord, edgechord] = extendRegularFaceChord(data, faceseed, edgeseed)
+%{
+visualizeHmeshData(data,figure,.00001);
+patch('faces',data.E(data.isSingularEdge,[1 2 1]),'vertices',data.V,'edgecolor','r','linewidth',5)
+patch('faces',data.E(isBlockedEdge,[1 2 1]),'vertices',data.V,'edgecolor','r','linewidth',3)
+patch('faces',data.F(faceseed,:),'vertices',data.V,'facecolor','c')
+patch('faces',data.E(edgeseed,[1 2 1]),'vertices',data.V,'edgecolor','g','linewidth',5)
+
+patch('faces',data.F(logicalchord,:),'vertices',data.V,'facecolor','c','facealpha',.5)
+%}
+function [logicalchord, facechord, edgechord] = extendRegularFaceChord(data, faceseed, edgeseed,isBlockedEdge)
+    if ~exist('isBlockedEdge','var'); isBlockedEdge=false(data.nE,1); end;
+
     logicalchord = false(size(data.F,1),1);
     facechord = [];
     edgechord = [];
@@ -11,10 +22,10 @@ function [logicalchord, facechord, edgechord] = extendRegularFaceChord(data, fac
         edgechord(end+1) = curredge;
         
         fedges = data.F2Earray(currface,:);
-        fedges2 = circshift(fedges,2);
+        fedges2 = circshift(fedges,2); % opposite edge
         nextedge = fedges2(find(fedges == curredge));
         
-        if data.isBoundaryEdge(nextedge) || data.isSingularEdge(nextedge) || nextedge == edgeseed
+        if data.isBoundaryEdge(nextedge) || data.isSingularEdge(nextedge) || nextedge == edgeseed || isBlockedEdge(nextedge)
             edgechord(end+1) = nextedge;
             break;
         end

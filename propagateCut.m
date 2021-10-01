@@ -45,7 +45,9 @@ function cutfaces = propagateCut(data,startnode,cutseed)
             end
         end
         % pull off next singular node to process
-        node = getNode(data, unresolvednodes(1)); 
+        snodeind = unresolvednodes(1);
+        node = getNode(data, snodeind); 
+        scatter3(data.V(snodeind,1),data.V(snodeind,2),data.V(snodeind,3),200,'y','filled')
         
         % get a cut local to node, and propagate it.
         facesToCut = selectSplit(data, node, cutfaces, forbiddenfaces);

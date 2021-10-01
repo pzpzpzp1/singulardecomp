@@ -1,3 +1,6 @@
+% hmm forgot i wrote this. i guess its redundant with extendRegularHexChord
+% now. but that one is more congruent with the other extend chord things so
+% ill keep that and deprecate this.
 function chord = traceChord(data, fseed, hexseed, stopOnSingular)
     chord = false(size(data.H,1),1);
     
