@@ -1,9 +1,12 @@
 % outputs cut faces. 
-function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
+function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces,bypass)
     assert(~data.isBoundaryVertex(node.ind))
     if nargin < 3
         alreadycutfaces = false(data.nF,1);
         forbiddenfaces = false(data.nF,1);
+    end
+    if ~exist('bypass','var')
+        bypass=false;
     end
     
     if all(~alreadycutfaces)
@@ -202,6 +205,25 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
                 
                 return;
             end
+            
+            if all(signature(3:6)==[2 3 0 2]') && bypass
+                %% (2 3 0 2) = (0 6 0 2) +_4 (2 3 0). val 3 and val 6 curve joined.
+                vdegs = data.efdeg(node.v2E);
+                edegs = sort(vdegs(node.e),2);
+                tdegs = sort(vdegs(node.t),2);
+                
+                side1 = all(sort(vdegs(node.t),2)==[3 6 6],2);
+                
+                % get boundary edges of side1 tris
+                side1edges = reshape(permute(reshape(node.t(side1,[1 2, 2 3, 3 1]),[],2,3),[1 3 2]),[],2);
+                [side1edges_unique,ia,ic] = unique(sort(side1edges,2),'rows');
+                boundarye = side1edges_unique(find(accumarray(ic,1)==1),:);
+                [~,boundaryeinds] = ismember(boundarye, sort(node.e,2), 'rows')
+                node.e2F(boundaryeinds);
+                cutfaces = node.e2F(boundaryeinds);
+                
+                return;
+            end
         end
         
         %% general case. find a cut based on the inductive simplification procedure. no conflicts to worry about.
@@ -211,10 +233,15 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         error('unhandled');
     else
         %% first check if ignoring the forbidden cuts just happens to give us the right answer.
-        cutfacesNaive = selectSplit(data, node);
-        if ~any(forbiddenfaces(cutfacesNaive))
-            cutfaces=cutfacesNaive;
-            return;
+        try
+            cutfacesNaive = selectSplit(data, node);
+            if ~any(forbiddenfaces(cutfacesNaive))
+                cutfaces=cutfacesNaive;
+                return;
+            end
+        catch
+            % if this split doesn't have a default handling, then just go
+            % on to try the shortest path method.
         end
         
         %% finish the existing cut. while avoiding forbidden cuts. Use shortest path. This is known to be able to cause global incompatibilities :'( "greedyoperation_failstonot_selfintersect.fig" shows an example.

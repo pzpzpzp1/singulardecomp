@@ -11,8 +11,8 @@ function QM = getQMfromCut(data,cut)
     QM.nV=size(QM.V,1);
     QM.nE=size(QM.E,1);
     QM.F2E = sparse(repmat(1:size(QM.F,1),1,4),QM.F2Earray,QM.F2Earray*0+1,QM.nF,QM.nE);
-    assert(all(ismember(unique(sum(QM.F2E)),[1 2]))); % ensures cut surface is manifold
-    QM.isBoundaryEdge = sum(QM.F2E)==1;
+    assert(all(ismember(unique(sum(QM.F2E,1)),[1 2]))); % ensures cut surface is manifold
+    QM.isBoundaryEdge = sum(QM.F2E,1)==1;
     
     [~,beind]=ismember(sort(QM.E(QM.isBoundaryEdge,:),2), sort(data.E,2), 'rows');
     % assert(all(data.isBoundaryEdge(beind))); % ensures boundary of cut surface is on the boundary of the hex mesh.

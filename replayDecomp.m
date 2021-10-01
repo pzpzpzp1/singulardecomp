@@ -8,7 +8,8 @@ function replayDecomp(decompdata)
 %         filename='results/tetpadded_16/decompdata.mat';  lwfac = .5; 
 %         filename='results/hex_ellipsoid_coarse_78/decompdata.mat'; lwfac = .5; cpos=[-8.5277       5.9426       2.1422];
 %         filename='results/Lpadded_77/decompdata.mat'; lwfac = .5; 
-        filename='results/Cpadded_64/decompdata.mat'; lwfac = .5; cpos=[ 0.58797      -6.9005      -7.4385];
+%         filename='results/Cpadded_64/decompdata.mat'; lwfac = .5; cpos=[ 0.58797      -6.9005      -7.4385];
+        filename='results/cactus_15/decompdata.mat'; lwfac = .5; cpos=[ 0.58797      -6.9005      -7.4385];
 %         filename='results/hex_sphere_64/decompdata.mat'; lwfac = .5; 
 %          filename='results/sing400_68/decompdata.mat'; cpos = [0.27478 -8.7551       17.758]; 
 %          filename='results/sing400_68/decompdata.mat'; cpos=[17.376          -0.39907      -5.3769]; % view 2. not a great angle.
@@ -69,7 +70,7 @@ function replayDecomp(decompdata)
         tempdata = datas{i+1};
         Vold = Vpresmooth{i};
         Vnew = tempdata.V;
-        ts = linspace(0,1,30);
+        ts = linspace(0,1,2);
         for ti=1:numel(ts)
             guielems = deleteElems(guielems);
             Vi = Vold*(1-ts(ti)) + Vnew*ts(ti);
