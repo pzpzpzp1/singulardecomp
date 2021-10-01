@@ -210,7 +210,14 @@ function cutfaces = selectSplit(data, node, alreadycutfaces, forbiddenfaces)
         
         error('unhandled');
     else
-        %% finish the existing cut. while avoiding forbidden cuts.
+        %% first check if ignoring the forbidden cuts just happens to give us the right answer.
+        cutfacesNaive = selectSplit(data, node);
+        if ~any(forbiddenfaces(cutfacesNaive))
+            cutfaces=cutfacesNaive;
+            return;
+        end
+        
+        %% finish the existing cut. while avoiding forbidden cuts. Use shortest path. This is known to be able to cause global incompatibilities :'( "greedyoperation_failstonot_selfintersect.fig" shows an example.
         % could be smart about this but for now lets just make a graph, and
         % fill it in arbitrarily.        
         partialpath = alreadycutfaces(node.F_adj);

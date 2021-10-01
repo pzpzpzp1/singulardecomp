@@ -5,10 +5,10 @@
 
 function cutfaces = extendRegularFaces(data, faceseed0, isBlockedEdge)
     if ~exist('isBlockedEdge','var'); isBlockedEdge=false(data.nE,1); end;
-
+    cutfaces = false(data.nF,1);
     faceseed = faceseed0;
     while true
-        cutfaces = crosscross(data, faceseed, isBlockedEdge);
+        cutfaces = cutfaces | crosscross(data, faceseed, isBlockedEdge);
 
         QM = getQMfromCut(data, cutfaces);
         QMbe = sort(QM.E(QM.isBoundaryEdge,:),2);
