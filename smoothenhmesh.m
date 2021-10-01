@@ -31,7 +31,7 @@ function [V, out] = smoothenhmesh(V0, H, trimesh, visualize, preLapSmooth,fixedn
     if preLapSmooth
         E = hex2edge(H);
         elens = vecnorm(V(E(:,1),:)-V(E(:,2),:),2,2);
-        dt = min(elens)/1;
+        dt = min(elens)/10;
         for i=1:10
             Vs{i}=V;
             if visualize

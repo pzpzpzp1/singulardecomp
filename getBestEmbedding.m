@@ -27,7 +27,9 @@ clear all; close all;
 % file_name = 'results/Lpadded_77/hmesh_1.vtk'; % Lpadded_77
 % file_name = 'results/Lpadded_77/hmesh_7.vtk'; 
 % file_name = 'results/Cpadded_64/hmesh_1.vtk'; skipL = 1;  % Cpadded_64
-file_name = 'results/Cpadded_64/hmesh_7.vtk';  skipL = 1; 
+% file_name = 'results/Cpadded_64/hmesh_7.vtk';  skipL = 1; 
+% file_name = 'results/cactus_15/hmesh_1.vtk'; skipL = 1;  % cactus 15
+file_name = 'results/cactus_15/hmesh_16.vtk'; skipL = 1;  
 % file_name = 'results/tet_split_notsplit/tetnotsplit.vtk'; % tet. 1to8 twice
 % file_name = 'results/tetnotsplit_64/hmesh_1.vtk'; % tet. padded
 % file_name = 'results/tet_split_notsplit/tetsplit.vtk'; 

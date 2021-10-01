@@ -3,10 +3,10 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     if nargin==0
 %         file_name = 'results_fmincon/hex_ellipsoid_coarse.vtk';
 %         file_name = 'meshes/bunny.vtk'; lfac = 500; saveres = 1;
-        file_name = 'meshes/carter-hex.vtk'; lfac = 500; saveres = 1; % hella dense! 
-        file_name = 'meshes/blood_vessel.mesh'; lfac = 500; saveres = 1; % unhandled val 6 singular node
-        file_name = 'meshes/knob.mesh'; lfac = 500; saveres = 1;  
-        file_name = 'meshes/cactus.vtk'; lfac = 500; saveres = 1;
+%         file_name = 'meshes/carter-hex.vtk'; lfac = 500; saveres = 1; % hella dense! 
+%         file_name = 'meshes/blood_vessel.mesh'; lfac = 500; saveres = 1; % unhandled val 6 singular node
+%         file_name = 'meshes/knob.mesh'; lfac = 500; saveres = 1;  % creates self intersections
+        file_name = 'meshes/cactus.vtk'; lfac = 500; saveres = 1; % success! had to fix some nodes and add bypass though.
         
 %         file_name = 'meshes/trebol.mesh'; lfac = 500; saveres = 1;  % unhandled val 6 singular node
 %         file_name = 'meshes/Lpadded.vtk'; lfac = 500; saveres = 1;
@@ -88,8 +88,8 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
     datas{1} = data;
     iter = 2;
 %     selinds = [1 1 2 3 1 3  3   1 1 1 1 1 1 1 1 1 1 1]; % 0 0 12
-%     selinds = [1 4 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1];
-    selinds = [1 6 2 5 1 1 5 5 6 5    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1];
+    selinds = [1 6 2 5 1 1 5 5 6 5    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]; % cactus
+%     selinds = [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1];
     selindrec = [];
     notskip = true;
     bypass = false;
@@ -105,8 +105,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
         selindrec = [selindrec selind];
         node_ind = singularNodes(selind);
         
-        if iter>=11
-            iter
+        if iter >=11
             bypass = true;
         end
         
@@ -146,6 +145,7 @@ function decompdata = decompose_hmesh(V0,H0,visualize,saveres)
         Vpresmooth{iter-1} = VnewPreperturb;
         
         %% geometric simplification
+        lfac=1000;
         preLapSmooth=0; uniformrot = 0; if ~exist('fixb','var'); fixb = 0; end;
        V = smoothenhmesh(V,H, [],visualize, preLapSmooth, [], lfac, 2, 0, uniformrot );
        V = smoothenhmesh(V,H, [],visualize, preLapSmooth, [], lfac, 4, 0, uniformrot );
