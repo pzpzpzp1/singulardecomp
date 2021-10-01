@@ -24,8 +24,12 @@ clear all; close all;
 % file_name = 'results/sing2_88/hmesh_4.vtk'; 
 % file_name = 'results/hex_ellipsoid_coarse_78/hmesh_1.vtk'; % ellipsoid
 % file_name = 'results/hex_ellipsoid_coarse_78/hmesh_5.vtk';
+% file_name = 'results/Lpadded_77/hmesh_1.vtk'; % Lpadded_77
+% file_name = 'results/Lpadded_77/hmesh_7.vtk'; 
+% file_name = 'results/Cpadded_64/hmesh_1.vtk'; skipL = 1;  % Cpadded_64
+file_name = 'results/Cpadded_64/hmesh_7.vtk';  skipL = 1; 
 % file_name = 'results/tet_split_notsplit/tetnotsplit.vtk'; % tet. 1to8 twice
-file_name = 'results/tetnotsplit_64/hmesh_1.vtk'; % tet. padded
+% file_name = 'results/tetnotsplit_64/hmesh_1.vtk'; % tet. padded
 % file_name = 'results/tet_split_notsplit/tetsplit.vtk'; 
 % file_name = 'results/tetpadded_16/hmesh_1.vtk'; skipL = 1; % tet padded
 % file_name = 'results/tetpadded_16/hmesh_4.vtk'; 
