@@ -21,7 +21,7 @@ function replayDecomp(decompdata)
 %         filename='results/sing206_69/decompdata.mat'; cpos=[-11.68      -34.268       2.9365]; lwfac=.7;
 %         filename='results/sing028_39/decompdata.mat'; lwfac=.5; cpos=[ 2.1639      -29.849       30.217];
 %         filename='results/sing0012_65/decompdata.mat'; lwfac=.5; 
-
+        saveres = 0;
         load(filename);
     end
     if ~exist('lwfac','var'); lwfac=1; end;
@@ -37,12 +37,20 @@ function replayDecomp(decompdata)
     datas = decompdata.datas;
     % get singularities and signatures
     %{
-    for i=1:numel(datas)
+    M={}; sigs={};
+    for i=1:(numel(datas)-1)
         d = datas{i};
         snodes = find(d.isSingularNode & ~d.isBoundaryVertex);
+        sigstrsrow = {};
         for j=1:numel(snodes)
-            sigs{i,j} = getNode(d,snodes(j)).signature
+            sigs{i,j} = getNode(d,snodes(j)).signature;
+            sigstrs{i,j} = num2str(sigs{i,j}');
+            sigstrsrow{j} = num2str(sigs{i,j}');
         end
+        keyvs = sigstrsrow;
+        valvs = 1:size(sigstrsrow,2);
+        M{i} = containers.Map(keyvs,valvs);
+        keys(M{i})
     end
     %}
     Vpresmooth = decompdata.Vpresmooth;
@@ -95,6 +103,8 @@ function replayDecomp(decompdata)
 end
 
 function imc=localsh(outname,imc)
+    return; % no save results
+    
     pic=getframe(gcf);
     pic2=RemoveWhiteSpace(pic.cdata);
     oname = sprintf(outname,imc);
